@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Home - The Twenty Best Games of All Time{% endblock %}
+{% block content %}
+<h2>All Games</h2>
+<div class="games-list">
+  {% for game in all_games %}
+    <div class="game-box" style="border:1px solid #ccc; margin-bottom:10px; padding:10px; display: flex; align-items: center;">
+      <div class="game-image" style="margin-right: 20px;">
+        <a href="{{ url_for('game_detail', game_id=game['game_id']) }}">
+          <img src="{{ game['cover_image'] }}" alt="{{ game['title'] }} Cover" style="width:150px;">
+        </a>
+      </div>
+      <div class="game-info" style="flex: 1;">
+        <a href="{{ url_for('game_detail', game_id=game['game_id']) }}" style="font-weight:bold; font-size:1.2em; display:block;">
+          {{ game['title'] }}
+        </a>
+        <p>Developer: {{ game['developer'] }}</p>
+        <p>Publisher: {{ game['publisher'] }}</p>
+        <p>Score: {{ game['metacritic_score'] }}</p>
+        <p>Age Rating: {{ game['age_rating'] }}</p>
+        <p>
+          <strong>Platforms:</strong>
+          {% if game['platform_name1'] %}{{ game['platform_name1'] }}{% endif %}
+          {% if game['platform_name2'] %} / {{ game['platform_name2'] }}{% endif %}
+          {% if game['platform_name3'] %} / {{ game['platform_name3'] }}{% endif %}
+          {% if game['platform_name4'] %} / {{ game['platform_name4'] }}{% endif %}
+          {% if game['platform_name5'] %} / {{ game['platform_name5'] }}{% endif %}
+          {% if game['platform_name6'] %} / {{ game['platform_name6'] }}{% endif %}
+          {% if game['platform_name7'] %} / {{ game['platform_name7'] }}{% endif %}
+          {% if game['platform_name8'] %} / {{ game['platform_name8'] }}{% endif %}
+        </p>
+        <p><strong>Price:</strong> {{ game['price'] }} {{ game['currency'] }}</p>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

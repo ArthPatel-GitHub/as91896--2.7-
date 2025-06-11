@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Search Games - The Twenty Best Games of All Time{% endblock %}
+{% block content %}
+<h2>Search / Filter Games</h2>
+{% if error %}
+  <p style="color:red; font-weight:bold;">{{ error }}</p>
+{% endif %}
+
+<!-- Form for Search (Title/Developer/Publisher) -->
+<form method="POST" action="{{ url_for('search') }}">
+  <h3>Search</h3>
+  <input type="hidden" name="filter" value="text">
+  <input type="text" name="search_term" placeholder="e.g., Ubisoft" style="width:300px;">
+  <p style="font-size:0.9em; color:#555;">
+    You can search by Title, Developer, or Publisher. (Try searching "Ubisoft".)
+  </p>
+  <button type="submit" style="padding:5px 15px;">Search</button>
+</form>
+
+<hr>
+
+<!-- Form for Metacritic Score search -->
+<form method="POST" action="{{ url_for('search') }}">
+  <h3>Search by Metacritic Score</h3>
+  <input type="hidden" name="filter" value="score">
+  <label>Min:</label>
+  <input type="number" name="score_min" value="80" min="80" max="100" style="width:80px;">
+  <label>Max:</label>
+  <input type="number" name="score_max" value="100" min="80" max="100" style="width:80px;">
+  <p style="font-size:0.9em; color:#555;">
+    Allowed range: 80 to 100.
+  </p>
+  <button type="submit" style="padding:5px 15px;">Search Score</button>
+</form>
+
+<hr>
+
+<!-- Form for Release Date search -->
+<form method="POST" action="{{ url_for('search') }}">
+  <h3>Search by Release Date</h3>
+  <input type="hidden" name="filter" value="date">
+  <label>From (YYYY-MM-DD):</label>
+  <input type="text" name="date_min" placeholder="e.g., 2005-01-01" style="width:120px;">
+  <label>To (YYYY-MM-DD):</label>
+  <input type="text" name="date_max" placeholder="e.g., 2020-12-31" style="width:120px;">
+  <p style="font-size:0.9em; color:#555;">
+    Allowed release dates: between 2000-01-01 and 2025-01-01.
+  </p>
+  <button type="submit" style="padding:5px 15px;">Search Date</button>
+</form>
+
+<hr>
+
+<!-- Form for Age Rating search -->
+<form method="POST" action="{{ url_for('search') }}">
+  <h3>Search by Age Rating</h3>
+  <input type="hidden" name="filter" value="age_rating">
+  <input type="text" name="age_rating" placeholder="e.g., PG" style="width:100px;">
+  <p style="font-size:0.9em; color:#555;">
+    Allowed age ratings: G, PG, M, R13, R16, R18.
+  </p>
+  <button type="submit" style="padding:5px 15px;">Search Age Rating</button>
+</form>
+
+<hr>
+
+<!-- Form for Platform search -->
+<form method="POST" action="{{ url_for('search') }}">
+  <h3>Search by Platform</h3>
+  <input type="hidden" name="filter" value="platform">
+  {% for plat in platforms %}
+      <label style="margin-right:15px;">
+        <input type="checkbox" name="platforms" value="{{ plat['platform_id'] }}">
+        {{ plat['platform_name'] }}
+      </label>
+  {% endfor %}
+  <p style="font-size:0.9em; color:#555;">
+    Select one or more platforms.
+  </p>
+  <button type="submit" style="padding:5px 15px;">Search Platform</button>
+</form>
+
+<hr>
+
+<!-- Section for listing available Publishers and Developers -->
+<div>
+  <h3>Available Publishers</h3>
+  <ul>
+    {% for pub in publishers %}
+      <li>{{ pub['name'] }}</li>
+    {% endfor %}
+  </ul>
+  
+  <h3>Available Developers</h3>
+  <ul>
+    {% for dev in developers %}
+      <li>{{ dev['name'] }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

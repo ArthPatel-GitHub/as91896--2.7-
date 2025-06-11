@@ -1,0 +1,54 @@
+/* Basic resets */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Header styling */
+header {
+  background: #333;
+  color: #fff;
+  padding: 10px;
+}
+header h1 a {
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Navigation styling */
+nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+nav ul li {
+  display: inline-block;
+  margin-right: 15px;
+}
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Container padding */
+main {
+  padding: 20px;
+}
+
+/* Footer styling */
+footer {
+  background: #f0f0f0;
+  text-align: center;
+  padding: 10px;
+  margin-top: 20px;
+}
+
+/* Optional: Borders for clarity */
+.result-card, .game-block {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+img {
+  width: 150px;
+  height: auto;
+}
