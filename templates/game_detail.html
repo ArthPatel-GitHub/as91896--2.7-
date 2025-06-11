@@ -1,6 +1,5 @@
-{% extends "base.html" %}
-{% block title %}{{ game['title'] }} - My Awesome Game Site{% endblock %}
-{% block content %}
+{% extends "base.html" %} {% block title %}{{ game['title'] }} - My Awesome Game
+Site{% endblock %} {% block content %}
 <h2>{{ game['title'] }}</h2>
 <p><strong>Genre:</strong> {{ game['genre'] }}</p>
 <p><strong>Developer:</strong> {{ game['developer'] }}</p>
@@ -9,37 +8,49 @@
 <p><strong>Metacritic Score:</strong> {{ game['metacritic_score'] }}</p>
 <p><strong>Description:</strong> {{ game['description'] }}</p>
 <p>
-  <strong>Age Rating:</strong> {{ game['age_rating'] }}<br>
+  <strong>Age Rating:</strong> {{ game['age_rating'] }}<br />
   <strong>Reason:</strong> {{ game['age_rating_reason'] }}
 </p>
 <p>
   <strong>Platforms:</strong>
-  {% if game['platform_name1'] %}{{ game['platform_name1'] }}{% endif %}
-  {% if game['platform_name2'] %} / {{ game['platform_name2'] }}{% endif %}
-  {% if game['platform_name3'] %} / {{ game['platform_name3'] }}{% endif %}
-  {% if game['platform_name4'] %} / {{ game['platform_name4'] }}{% endif %}
-  {% if game['platform_name5'] %} / {{ game['platform_name5'] }}{% endif %}
-  {% if game['platform_name6'] %} / {{ game['platform_name6'] }}{% endif %}
-  {% if game['platform_name7'] %} / {{ game['platform_name7'] }}{% endif %}
-  {% if game['platform_name8'] %} / {{ game['platform_name8'] }}{% endif %}
+  {% if game['platform_name1'] %}{{ game['platform_name1'] }}{% endif %} {% if
+  game['platform_name2'] %} / {{ game['platform_name2'] }}{% endif %} {% if
+  game['platform_name3'] %} / {{ game['platform_name3'] }}{% endif %} {% if
+  game['platform_name4'] %} / {{ game['platform_name4'] }}{% endif %} {% if
+  game['platform_name5'] %} / {{ game['platform_name5'] }}{% endif %} {% if
+  game['platform_name6'] %} / {{ game['platform_name6'] }}{% endif %} {% if
+  game['platform_name7'] %} / {{ game['platform_name7'] }}{% endif %} {% if
+  game['platform_name8'] %} / {{ game['platform_name8'] }}{% endif %}
 </p>
 <p><strong>Price:</strong> {{ game['price'] }} {{ game['currency'] }}</p>
 
-<div style="margin:20px 0;">
+<div style="margin: 20px 0">
   {% if game['image_url'] %}
-    <img src="{{ game['image_url'] }}" alt="{{ game['title'] }} Screenshot" style="width:300px; margin-right:10px;">
-  {% endif %}
-  {% if game['image_url2'] %}
-    <img src="{{ game['image_url2'] }}" alt="{{ game['title'] }} Screenshot" style="width:300px; margin-right:10px;">
-  {% endif %}
-  {% if game['image_url3'] %}
-    <img src="{{ game['image_url3'] }}" alt="{{ game['title'] }} Screenshot" style="width:300px; margin-right:10px;">
+  <img
+    src="{{ game['image_url'] }}"
+    alt="{{ game['title'] }} Screenshot"
+    style="width: 300px; margin-right: 10px"
+  />
+  {% endif %} {% if game['image_url2'] %}
+  <img
+    src="{{ game['image_url2'] }}"
+    alt="{{ game['title'] }} Screenshot"
+    style="width: 300px; margin-right: 10px"
+  />
+  {% endif %} {% if game['image_url3'] %}
+  <img
+    src="{{ game['image_url3'] }}"
+    alt="{{ game['title'] }} Screenshot"
+    style="width: 300px; margin-right: 10px"
+  />
   {% endif %}
 </div>
 {% if session.get('user_id') %}
-  <a href="{{ url_for('add_to_list', game_id=game['game_id']) }}">Add to My List</a>
+<a href="{{ url_for('add_to_list', game_id=game['game_id']) }}"
+  >Add to My List</a
+>
 {% else %}
-  <p><a href="{{ url_for('login') }}">Log in</a> to save this game to your list.</p>
+<p><a href="/login">Log in</a> to save this game to your list.</p>
 {% endif %}
 
 <a href="{{ url_for('home') }}">Back to Home</a>

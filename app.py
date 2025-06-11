@@ -1,18 +1,76 @@
-from flask import Flask, render_template, request, redirect, url_for
+# app.py
+
 import sqlite3
 import random
 from datetime import datetime
 import difflib
+from flask import Flask, render_template, request, redirect, url_for, session, flash # Added session, flash
+from werkzeug.security import generate_password_hash, check_password_hash # Added for password hashing
+import os # Added for secret key generation
 
 app = Flask(__name__)
-DATABASE = 'Popular_Games.db'  # Your database file
 
-def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
+# --- Database Paths ---
+# Your existing games database
+POPULAR_GAMES_DATABASE = 'Popular_Games.db'
+# New database for user specific data (will be created in the same directory as app.py)
+USER_DATABASE = 'user_data.db'
+
+# --- Flask Secret Key for Sessions ---
+# IMPORTANT: In a production environment, generate a strong, static key
+# and store it securely (e.g., environment variable). For development, os.urandom(24) is fine.
+app.secret_key = os.urandom(24)
+
+# --- Database Connection Functions ---
+
+def get_popular_games_db():
+    """Connects to the existing popular games database."""
+    conn = sqlite3.connect(POPULAR_GAMES_DATABASE)
     conn.row_factory = sqlite3.Row  # Enable column access by name
     return conn
 
-# Updated MASTER QUERY including the prices table.
+def get_user_db():
+    """Connects to the new user data database."""
+    conn = sqlite3.connect(USER_DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_user_db():
+    """Initializes the user data database with necessary tables."""
+    with app.app_context(): # Ensure we are in the Flask app context
+        user_db = get_user_db()
+        cursor = user_db.cursor()
+        # Create users table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                dob TEXT -- Date of Birth in YYYY-MM-DD format
+            )
+        ''')
+        # Create user_game_list table to store games associated with each user
+        # This will link to game IDs from POPULAR_GAMES.db
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_game_list (
+                user_id INTEGER NOT NULL,
+                game_id INTEGER NOT NULL,
+                PRIMARY KEY (user_id, game_id),
+                FOREIGN KEY (user_id) REFERENCES users(id)
+                -- No FOREIGN KEY for game_id because it's in a different database.
+                -- We rely on the game_id existing in POPULAR_GAMES.db
+            )
+        ''')
+        user_db.commit()
+        print("User database initialized successfully!")
+
+# Call init_user_db() when the application starts
+# This ensures tables are created if they don't exist
+with app.app_context():
+    init_user_db()
+
+
+# Your existing GAME_SELECT query (no changes needed here)
 GAME_SELECT = """
 SELECT
     g.game_id,
@@ -46,7 +104,7 @@ JOIN age_ratings ar        ON g.age_rating_id = ar.age_rating_id
 JOIN images i              ON g.game_id       = i.game_id
 LEFT JOIN game_platforms gp ON g.game_id       = gp.game_id
 LEFT JOIN prices pr         ON g.game_id       = pr.game_id
-LEFT JOIN platforms p1      ON gp.platform_id   = p1.platform_id
+LEFT JOIN platforms p1      ON gp.platform_id  = p1.platform_id
 LEFT JOIN platforms p2      ON gp.platform_id2  = p2.platform_id
 LEFT JOIN platforms p3      ON gp.platform_id3  = p3.platform_id
 LEFT JOIN platforms p4      ON gp.platform_id4  = p4.platform_id
@@ -59,7 +117,7 @@ LEFT JOIN platforms p8      ON gp.platform_id8  = p8.platform_id
 @app.route('/')
 def home():
     """Home page: Show all games with their prices and other info."""
-    conn = get_db_connection()
+    conn = get_popular_games_db() # Use the specific function
     games = conn.execute(GAME_SELECT).fetchall()
     conn.close()
     return render_template("index.html", all_games=games)
@@ -71,7 +129,7 @@ def search():
     The 'filter' hidden field indicates which filter is being used.
     Supports fuzzy text search, score filtering, date filtering, age rating filtering, and platform filtering.
     """
-    conn = get_db_connection()
+    conn = get_popular_games_db() # Use the specific function
     # Retrieve lists for publishers and developers for hints.
     publishers = conn.execute("SELECT name FROM publishers").fetchall()
     developers = conn.execute("SELECT name FROM developers").fetchall()
@@ -101,10 +159,10 @@ def search():
                 else:
                     wildcard = f"%{search_term}%"
                 query += """
-                  AND (g.title LIKE ? COLLATE NOCASE
-                       OR d.name LIKE ? COLLATE NOCASE
-                       OR pub.name LIKE ? COLLATE NOCASE)
-                """
+                    AND (g.title LIKE ? COLLATE NOCASE
+                        OR d.name LIKE ? COLLATE NOCASE
+                        OR pub.name LIKE ? COLLATE NOCASE)
+                    """
                 params.extend([wildcard, wildcard, wildcard])
             else:
                 error = "Please enter a search term."
@@ -155,17 +213,18 @@ def search():
             if selected_plats:
                 placeholders = ",".join("?" for _ in selected_plats)
                 query += f"""
-                  AND (
-                    gp.platform_id  IN ({placeholders})
-                    OR gp.platform_id2 IN ({placeholders})
-                    OR gp.platform_id3 IN ({placeholders})
-                    OR gp.platform_id4 IN ({placeholders})
-                    OR gp.platform_id5 IN ({placeholders})
-                    OR gp.platform_id6 IN ({placeholders})
-                    OR gp.platform_id7 IN ({placeholders})
-                    OR gp.platform_id8 IN ({placeholders})
-                  )
-                """
+                    AND (
+                        gp.platform_id  IN ({placeholders})
+                        OR gp.platform_id2 IN ({placeholders})
+                        OR gp.platform_id3 IN ({placeholders})
+                        OR gp.platform_id4 IN ({placeholders})
+                        OR gp.platform_id5 IN ({placeholders})
+                        OR gp.platform_id6 IN ({placeholders})
+                        OR gp.platform_id7 IN ({placeholders})
+                        OR gp.platform_id8 IN ({placeholders})
+                    )
+                    """
+                # Duplicate selected_plats 8 times as per your existing query structure
                 for _ in range(8):
                     params.extend(selected_plats)
             else:
@@ -196,18 +255,20 @@ def search():
 @app.route("/game/<int:game_id>")
 def game_detail(game_id):
     """Show details for a single game, including its price."""
-    conn = get_db_connection()
+    conn = get_popular_games_db() # Use the specific function
     query = GAME_SELECT + " WHERE g.game_id = ?"
     game = conn.execute(query, (game_id,)).fetchone()
     conn.close()
     if not game:
         return "Game not found", 404
-    return render_template("game_detail.html", game=game)
+    # Check if user is logged in to show "Add to My List" button
+    # This uses the session, which is an advanced technique (modifying data stored in collections)
+    return render_template("game_detail.html", game=game, logged_in='username' in session)
 
 @app.route("/random")
 def random_game():
     """Redirect to a random game's detail page."""
-    conn = get_db_connection()
+    conn = get_popular_games_db() # Use the specific function
     games = conn.execute("SELECT game_id FROM games").fetchall()
     conn.close()
     if not games:
@@ -215,5 +276,11 @@ def random_game():
     random_id = random.choice(games)["game_id"]
     return redirect(url_for("game_detail", game_id=random_id))
 
+# --- NEW ROUTES WILL GO HERE IN SUBSEQUENT COMMITS ---
+# Placeholder for new routes for register, login, my_games, profile, etc.
+
 if __name__ == '__main__':
+    # init_user_db() # We call this once globally now via app.app_context()
     app.run(debug=True)
+
+    # Existing home route, now slightly modified to show session access
