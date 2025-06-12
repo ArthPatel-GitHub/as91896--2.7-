@@ -275,6 +275,218 @@ def random_game():
         return "No games in database", 404
     random_id = random.choice(games)["game_id"]
     return redirect(url_for("game_detail", game_id=random_id))
+# app.py (add this section somewhere after your @app.route('/register') function)
+
+# --- User Authentication & Management Routes ---
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Handles user login."""
+    print("--- Login Route Accessed ---") # Debug print
+    if request.method == 'POST':
+        username = request.form['username'].strip()
+        password = request.form['password'].strip()
+
+        print(f"Attempting login for username: '{username}'") # Debug print
+
+        if not username or not password:
+            flash('Username and password are required!', 'error')
+            print("Validation: Username or password missing.") # Debug print
+            return render_template('login.html')
+
+        user_db = get_user_db()
+        user = user_db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        user_db.close()
+
+        if user:
+            print(f"User '{username}' found in DB. Stored hash: {user['password']}") # Debug print
+            print(f"Entered password: '{password}'") # Debug print
+            if check_password_hash(user['password'], password):
+                print("Password check: SUCCESS!") # Debug print
+                session['user_id'] = user['id']
+                session['username'] = user['username']
+                flash('Logged in successfully!', 'success')
+                print(f"Session after login: user_id={session.get('user_id')}, username={session.get('username')}") # Debug print
+                return redirect(url_for('home'))
+            else:
+                print("Password check: FAILED.") # Debug print
+                flash('Invalid username or password.', 'error')
+        else:
+            print("User NOT found in DB.") # Debug print
+            flash('Invalid username or password.', 'error')
+
+    print(f"Rendering login.html. Current session username: {session.get('username', 'None')}") # Debug print
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    """Logs out the current user."""
+    # This part will be implemented in a later commit
+    session.pop('user_id', None) # Remove user_id from session
+    session.pop('username', None) # Remove username from session
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('home'))
+
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    """Displays user profile and handles updates."""
+    if 'user_id' not in session:
+        flash('Please log in to view your profile.', 'info')
+        return redirect(url_for('login'))
+
+    user_db = get_user_db()
+    user = user_db.execute("SELECT * FROM users WHERE id = ?", (session['user_id'],)).fetchone()
+    user_db.close()
+
+    if not user:
+        flash('User not found. Please log in again.', 'error')
+        session.pop('user_id', None)
+        session.pop('username', None)
+        return redirect(url_for('login'))
+
+    # POST requests for profile page will be handled by specific update routes like /update_dob, /change_password
+    return render_template('profile.html', user=user)
+
+
+@app.route('/update_dob', methods=['POST'])
+def update_dob():
+    """Handles updating the user's date of birth."""
+    if 'user_id' not in session:
+        flash('Please log in to update your profile.', 'info')
+        return redirect(url_for('login'))
+
+    # This part will be implemented in a later commit
+    flash('Date of birth update logic to be implemented.', 'warning') # Placeholder
+    return redirect(url_for('profile'))
+
+@app.route('/change_password', methods=['POST'])
+def change_password():
+    """Handles changing the user's password."""
+    if 'user_id' not in session:
+        flash('Please log in to change your password.', 'info')
+        return redirect(url_for('login'))
+
+    # This part will be implemented in a later commit
+    flash('Password change logic to be implemented.', 'warning') # Placeholder
+    return redirect(url_for('profile'))
+
+
+@app.route('/my_games')
+def my_games():
+    """Displays the current user's list of games."""
+    if 'user_id' not in session:
+        flash('Please log in to view your game list.', 'info')
+        return redirect(url_for('login'))
+
+    user_db = get_user_db()
+    user_id = session['user_id']
+    game_ids = user_db.execute("SELECT game_id FROM user_game_list WHERE user_id = ?", (user_id,)).fetchall()
+    user_db.close()
+
+    # Extract game_ids into a list
+    game_id_list = [row['game_id'] for row in game_ids]
+
+    user_games = []
+    if game_id_list:
+        # Construct a query to fetch full game details from POPULAR_GAMES.db
+        # This will use the game_id from the user's list
+        placeholders = ','.join('?' for _ in game_id_list)
+        popular_games_db = get_popular_games_db()
+        # Use the master GAME_SELECT query but filter by game_id
+        game_query = GAME_SELECT + f" WHERE g.game_id IN ({placeholders})"
+        user_games = popular_games_db.execute(game_query, tuple(game_id_list)).fetchall()
+        popular_games_db.close()
+
+    return render_template('my_games.html', user_games=user_games)
+
+@app.route('/add_to_list/<int:game_id>', methods=['GET', 'POST'])
+def add_to_list(game_id):
+    """Adds a game to the logged-in user's list."""
+    if 'user_id' not in session:
+        flash('Please log in to add games to your list.', 'info')
+        return redirect(url_for('login'))
+
+    user_db = get_user_db()
+    user_id = session['user_id']
+    try:
+        # Check if the game is already in the list
+        existing_entry = user_db.execute("SELECT 1 FROM user_game_list WHERE user_id = ? AND game_id = ?",
+                                         (user_id, game_id)).fetchone()
+        if existing_entry:
+            flash('This game is already in your list!', 'warning')
+        else:
+            user_db.execute("INSERT INTO user_game_list (user_id, game_id) VALUES (?, ?)",
+                            (user_id, game_id))
+            user_db.commit()
+            flash('Game added to your list!', 'success')
+    except sqlite3.Error as e:
+        flash(f'An error occurred: {e}', 'error')
+        user_db.rollback()
+    finally:
+        user_db.close()
+    return redirect(url_for('game_detail', game_id=game_id))
+
+
+@app.route('/remove_from_list/<int:game_id>', methods=['POST'])
+def remove_from_list(game_id):
+    """Removes a game from the logged-in user's list."""
+    if 'user_id' not in session:
+        flash('Please log in to remove games from your list.', 'info')
+        return redirect(url_for('login'))
+
+    user_db = get_user_db()
+    user_id = session['user_id']
+    try:
+        cursor = user_db.cursor()
+        cursor.execute("DELETE FROM user_game_list WHERE user_id = ? AND game_id = ?",
+                       (user_id, game_id))
+        if cursor.rowcount > 0: # Check if any row was deleted
+            user_db.commit()
+            flash('Game removed from your list!', 'success')
+        else:
+            flash('Game not found in your list.', 'warning')
+    except sqlite3.Error as e:
+        flash(f'An error occurred: {e}', 'error')
+        user_db.rollback()
+    finally:
+        user_db.close()
+    return redirect(url_for('my_games')) # Redirect to the user's game list
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """Handles user registration."""
+    if request.method == 'POST':
+        username = request.form['username'].strip()
+        password = request.form['password'].strip()
+        dob = request.form['dob'].strip() # Date of Birth
+
+        # Basic validation
+        if not username or not password or not dob:
+            flash('All fields are required!', 'error')
+            return render_template('register.html')
+
+        # --- Advanced Technique: Modifying data stored in collections (Hashing password) ---
+        # Hashing the password before storing it is crucial for security.
+        hashed_password = generate_password_hash(password)
+
+        user_db = get_user_db() # Get connection to user_data.db
+        cursor = user_db.cursor()
+        try:
+            # Insert the new user into the 'users' table
+            cursor.execute("INSERT INTO users (username, password, dob) VALUES (?, ?, ?)",
+                           (username, hashed_password, dob))
+            user_db.commit() # Save changes to the database
+            flash('Registration successful! Please log in.', 'success')
+            return redirect(url_for('login')) # Redirect to login page after successful registration
+        except sqlite3.IntegrityError:
+            # This error occurs if a UNIQUE constraint is violated (e.g., duplicate username)
+            flash('Username already exists. Please choose a different one.', 'error')
+            user_db.rollback() # Discard changes if there was an error
+        finally:
+            user_db.close() # Always close the database connection
+    # If it's a GET request, or if there was an error on POST, render the registration form
+    return render_template('register.html')
+
+
 
 # --- NEW ROUTES WILL GO HERE IN SUBSEQUENT COMMITS ---
 # Placeholder for new routes for register, login, my_games, profile, etc.

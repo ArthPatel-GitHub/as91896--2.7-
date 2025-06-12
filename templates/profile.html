@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - My Awesome Game Site{% endblock %}
+
+{% block content %}
+<h2>My Profile</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class="flashes">
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
+
+<h3>Account Information</h3>
+<p><strong>Username:</strong> {{ session['username'] }}</p>
+<p><strong>Date of Birth:</strong> {{ user.dob }}</p> {# 'user' object will be passed from Flask #}
+
+<h3>Change Date of Birth</h3>
+<form method="POST" action="{{ url_for('update_dob') }}">
+    <p>
+        <label for="new_dob">New Date of Birth (YYYY-MM-DD):</label><br>
+        <input type="date" id="new_dob" name="new_dob" value="{{ user.dob }}" required>
+    </p>
+    <p>
+        <button type="submit">Update Date of Birth</button>
+    </p>
+</form>
+
+<h3>Change Password</h3>
+<form method="POST" action="{{ url_for('change_password') }}">
+    <p>
+        <label for="current_password">Current Password:</label><br>
+        <input type="password" id="current_password" name="current_password" required>
+    </p>
+    <p>
+        <label for="new_password">New Password:</label><br>
+        <input type="password" id="new_password" name="new_password" required>
+    </p>
+    <p>
+        <label for="confirm_password">Confirm New Password:</label><br>
+        <input type="password" id="confirm_password" name="confirm_password" required>
+    </p>
+    <p>
+        <button type="submit">Change Password</button>
+    </p>
+</form>
+
+<p><a href="{{ url_for('home') }}">Back to Home</a></p>
+{% endblock %}

@@ -10,11 +10,20 @@
     <h1><a href="{{ url_for('home') }}">The Twenty Best Games of All Time</a></h1>
     <nav>
       <ul>
-        <li><a href="{{ url_for('home') }}">Home</a></li>
-        <li><a href="{{ url_for('search') }}">Search</a></li>
-        <li><a href="{{ url_for('random_game') }}">Random Game</a></li>
+          <li><a href="{{ url_for('home') }}">Home</a></li>
+          <li><a href="{{ url_for('search') }}">Search</a></li>
+          <li><a href="{{ url_for('random_game') }}">Random Game</a></li>
+          {# NEW: Add links for login and register #}
+          {% if 'username' in session %}
+              <li><a href="{{ url_for('profile') }}">Profile</a></li> {# Link to profile page, will be added later #}
+              <li><a href="{{ url_for('my_games') }}">My Games</a></li> {# Link to user's game list, will be added later #}
+              <li><a href="{{ url_for('logout') }}">Logout ({{ session['username'] }})</a></li> {# Link to logout #}
+          {% else %}
+              <li><a href="{{ url_for('login') }}">Login</a></li>
+              <li><a href="{{ url_for('register') }}">Register</a></li>
+          {% endif %}
       </ul>
-    </nav>
+  </nav>
   </header>
   <main>
     {% block content %}{% endblock %}
