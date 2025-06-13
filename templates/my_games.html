@@ -1,60 +1,45 @@
 {% extends "base.html" %}
-
-{% block title %}My Games List - My Awesome Game Site{% endblock %}
+{% block title %}My Games List{% endblock %}
 
 {% block content %}
-<h2>My Games List</h2>
+<div class="container my-4">
+    <h2 class="mb-4">My Games List</h2>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <ul class="flashes">
-            {% for category, message in messages %}
-                <li class="{{ category }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-{% endwith %}
-
-{% if user_games %}
-    <div class="games-list">
+    {% if user_games %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for game in user_games %}
-            <div class="game-box" style="border:1px solid #ccc; margin-bottom:10px; padding:10px; display: flex; align-items: center;">
-                <div class="game-image" style="margin-right: 20px;">
-                    <a href="{{ url_for('game_detail', game_id=game['game_id']) }}">
-                        <img src="{{ game['cover_image'] }}" alt="{{ game['title'] }} Cover" style="width:150px;">
-                    </a>
-                </div>
-                <div class="game-info" style="flex: 1;">
-                    <a href="{{ url_for('game_detail', game_id=game['game_id']) }}" style="font-weight:bold; font-size:1.2em; display:block;">
-                        {{ game['title'] }}
-                    </a>
-                    <p>Developer: {{ game['developer'] }}</p>
-                    <p>Publisher: {{ game['publisher'] }}</p>
-                    <p>Score: {{ game['metacritic_score'] }}</p>
-                    <p>Age Rating: {{ game['age_rating'] }}</p>
-                    <p>
-                        <strong>Platforms:</strong>
-                        {% if game['platform_name1'] %}{{ game['platform_name1'] }}{% endif %}
-                        {% if game['platform_name2'] %} / {{ game['platform_name2'] }}{% endif %}
-                        {% if game['platform_name3'] %} / {{ game['platform_name3'] }}{% endif %}
-                        {% if game['platform_name4'] %} / {{ game['platform_name4'] }}{% endif %}
-                        {% if game['platform_name5'] %} / {{ game['platform_name5'] }}{% endif %}
-                        {% if game['platform_name6'] %} / {{ game['platform_name6'] }}{% endif %}
-                        {% if game['platform_name7'] %} / {{ game['platform_name7'] }}{% endif %}
-                        {% if game['platform_name8'] %} / {{ game['platform_name8'] }}{% endif %}
-                    </p>
-                    <p><strong>Price:</strong> {{ game['price'] }} {{ game['currency'] }}</p>
-                    <form action="{{ url_for('remove_from_list', game_id=game['game_id']) }}" method="post" style="display:inline;">
-                        <button type="submit" style="background-color:#ff4d4d; color:white; border:none; padding:5px 10px; cursor:pointer;">Remove from My List</button>
-                    </form>
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                {# You might want to get the cover image here too if available in your JOIN #}
+                {# For now, using a placeholder or assuming it's passed #}
+                <img src="{{ game.cover_image or 'https://via.placeholder.com/200x200?text=No+Image' }}" class="card-img-top" alt="{{ game.title }}" style="height: 200px; object-fit: cover;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ game.title }}</h5>
+                    <p class="card-text"><strong>Genre:</strong> {{ game.genre }}</p>
+                    <p class="card-text"><strong>Release Date:</strong> {{ game.release_date }}</p>
+                    <p class="card-text"><strong>Metacritic:</strong> <span class="badge bg-success">{{ game.metacritic_score }}</span></p>
+                    {% if game.platforms_display %}
+                    <p class="card-text"><strong>Platforms:</strong> {{ game.platforms_display | join(', ') }}</p>
+                    {% endif %}
+                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('game_detail', game_id=game.game_id) }}" class="btn btn-info btn-sm">View Details</a>
+                        <form action="{{ url_for('remove_from_list', game_id=game.game_id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fas fa-minus-circle"></i> Remove
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
+        </div>
         {% endfor %}
     </div>
-{% else %}
-    <p>You haven't added any games to your list yet.</p>
-    <p><a href="{{ url_for('home') }}">Browse games</a> to start adding them!</p>
-{% endif %}
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        You haven't added any games to your list yet. <a href="{{ url_for('search') }}">Start exploring!</a>
+    </div>
+    {% endif %}
 
-<p><a href="{{ url_for('home') }}">Back to Home</a></p>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary mt-4"><i class="fas fa-arrow-left"></i> Back to Home</a>
+</div>
 {% endblock %}

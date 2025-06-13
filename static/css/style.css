@@ -1,54 +1,88 @@
-/* Basic resets */
+/* static/css/style.css */
+
+/* Basic resets (from user's input) */
 body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
+  /* These properties are crucial for the sticky footer functionality */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-/* Header styling */
-header {
-  background: #333;
-  color: #fff;
-  padding: 10px;
-}
-header h1 a {
-  color: #fff;
+/* Header styling (adapted from user's input, most handled by Bootstrap) */
+/* Specific styling for the brand link inside the Bootstrap navbar */
+.navbar-brand {
+  color: #fff; /* Ensures brand text is white */
   text-decoration: none;
 }
+/* If you want header specific background not covered by navbar-dark */
+/* header { background: #333; color: #fff; padding: 10px; } */
 
-/* Navigation styling */
-nav ul {
-  list-style-type: none;
-  padding: 0;
-}
-nav ul li {
-  display: inline-block;
-  margin-right: 15px;
-}
-nav ul li a {
-  color: #fff;
-  text-decoration: none;
+
+/* Navigation styling (most handled by Bootstrap's .nav-item, .nav-link) */
+/* No need for explicit nav ul, nav ul li, nav ul li a due to Bootstrap's structure */
+/* You can add custom styles for nav links if needed, e.g., */
+/* .navbar .nav-link { color: #ccc; } */
+/* .navbar .nav-link:hover { color: #fff; } */
+
+
+/* Main content container styling */
+/* The .container class from Bootstrap already provides horizontal padding */
+/* Adding vertical padding and flex property for sticky footer */
+.content {
+  padding-top: 20px; /* Space below the navbar */
+  padding-bottom: 20px; /* Space above the footer */
+  flex: 1; /* Allows the content area to grow and push the footer down */
 }
 
-/* Container padding */
-main {
-  padding: 20px;
-}
-
-/* Footer styling */
-footer {
-  background: #f0f0f0;
+/* Footer styling (combined user's input with existing structure) */
+.footer {
+  background: #f0f0f0; /* User's preferred light gray background */
   text-align: center;
-  padding: 10px;
-  margin-top: 20px;
+  padding: 1rem 0; /* Bootstrap's padding for footer */
+  border-top: 1px solid #e9ecef; /* Light border on top for separation */
+  margin-top: auto; /* Pushes footer to the very bottom of the page */
 }
 
-/* Optional: Borders for clarity */
-.result-card, .game-block {
-  border: 1px solid #ccc;
-  padding: 10px;
+/* General image styling for consistency (from user's input) */
+/* Applied to Bootstrap's card-img-top for game display */
+.card-img-top {
+  width: 100%; /* Ensures image fills the card width */
+  height: 200px; /* Fixed height for consistent card sizes */
+  object-fit: cover; /* Crops the image to cover the area without distortion */
 }
-img {
-  width: 150px;
-  height: auto;
+
+/* Specific styling for small thumbnail images in game detail */
+.img-thumbnail {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  margin: 5px; /* Small margin around thumbnails */
 }
+
+/* Styling for result cards (from user's input, adapted to Bootstrap's .card) */
+.card {
+  border: 1px solid #ccc; /* Adds a light border to all cards */
+  /* Bootstrap's .card-body already provides padding, so no need for .result-card, .game-block specific padding */
+}
+
+/* Specific styling for search result/game list cards */
+/* The h-100 class on the card ensures they take full height of their column in Bootstrap's grid */
+.card.h-100 {
+  display: flex;
+  flex-direction: column;
+}
+.card.h-100 .card-body {
+  flex-grow: 1; /* Ensures body takes available space in height */
+  display: flex;
+  flex-direction: column;
+}
+.card.h-100 .card-body .mt-auto {
+  margin-top: auto !important; /* Pushes buttons to the bottom of the card */
+}
+
+/* Custom styles for flash messages (optional, Bootstrap handles most) */
+/* You can refine alerts if needed, e.g. */
+/* .alert { margin-top: 1rem; } */

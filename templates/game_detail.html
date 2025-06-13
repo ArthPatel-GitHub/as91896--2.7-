@@ -1,57 +1,82 @@
-{% extends "base.html" %} {% block title %}{{ game['title'] }} - My Awesome Game
-Site{% endblock %} {% block content %}
-<h2>{{ game['title'] }}</h2>
-<p><strong>Genre:</strong> {{ game['genre'] }}</p>
-<p><strong>Developer:</strong> {{ game['developer'] }}</p>
-<p><strong>Publisher:</strong> {{ game['publisher'] }}</p>
-<p><strong>Release Date:</strong> {{ game['release_date'] }}</p>
-<p><strong>Metacritic Score:</strong> {{ game['metacritic_score'] }}</p>
-<p><strong>Description:</strong> {{ game['description'] }}</p>
-<p>
-  <strong>Age Rating:</strong> {{ game['age_rating'] }}<br />
-  <strong>Reason:</strong> {{ game['age_rating_reason'] }}
-</p>
-<p>
-  <strong>Platforms:</strong>
-  {% if game['platform_name1'] %}{{ game['platform_name1'] }}{% endif %} {% if
-  game['platform_name2'] %} / {{ game['platform_name2'] }}{% endif %} {% if
-  game['platform_name3'] %} / {{ game['platform_name3'] }}{% endif %} {% if
-  game['platform_name4'] %} / {{ game['platform_name4'] }}{% endif %} {% if
-  game['platform_name5'] %} / {{ game['platform_name5'] }}{% endif %} {% if
-  game['platform_name6'] %} / {{ game['platform_name6'] }}{% endif %} {% if
-  game['platform_name7'] %} / {{ game['platform_name7'] }}{% endif %} {% if
-  game['platform_name8'] %} / {{ game['platform_name8'] }}{% endif %}
-</p>
-<p><strong>Price:</strong> {{ game['price'] }} {{ game['currency'] }}</p>
+{% extends "base.html" %}
+{% block title %}Game Details: {{ game.title }}{% endblock %}
 
-<div style="margin: 20px 0">
-  {% if game['image_url'] %}
-  <img
-    src="{{ game['image_url'] }}"
-    alt="{{ game['title'] }} Screenshot"
-    style="width: 300px; margin-right: 10px"
-  />
-  {% endif %} {% if game['image_url2'] %}
-  <img
-    src="{{ game['image_url2'] }}"
-    alt="{{ game['title'] }} Screenshot"
-    style="width: 300px; margin-right: 10px"
-  />
-  {% endif %} {% if game['image_url3'] %}
-  <img
-    src="{{ game['image_url3'] }}"
-    alt="{{ game['title'] }} Screenshot"
-    style="width: 300px; margin-right: 10px"
-  />
-  {% endif %}
+{% block content %}
+<div class="container my-4">
+    <div class="card shadow-lg">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    {% if game.cover_image %}
+                    <img src="{{ game.cover_image }}" class="img-fluid rounded shadow-sm" alt="{{ game.title }}" style="max-height: 400px; object-fit: contain;">
+                    {% else %}
+                    <img src="https://via.placeholder.com/300x400?text=No+Image" class="img-fluid rounded shadow-sm" alt="No image available" style="max-height: 400px; object-fit: contain;">
+                    {% endif %}
+                    <div class="mt-3">
+                        {% if game.image_url %}<img src="{{ game.image_url }}" class="img-thumbnail" style="width: 80px; height: 60px; object-fit: cover;">{% endif %}
+                        {% if game.image_url2 %}<img src="{{ game.image_url2 }}" class="img-thumbnail" style="width: 80px; height: 60px; object-fit: cover;">{% endif %}
+                        {% if game.image_url3 %}<img src="{{ game.image_url3 }}" class="img-thumbnail" style="width: 80px; height: 60px; object-fit: cover;">{% endif %}
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <h2 class="card-title mb-3">{{ game.title }}</h2>
+                    <p class="card-text lead">{{ game.description }}</p>
+                    <hr>
+                    <p class="card-text"><strong>Genre:</strong> <span class="badge bg-secondary">{{ game.genre }}</span></p>
+                    <p class="card-text"><strong>Platforms:</strong> 
+                        {% if game.platforms_display %}
+                            {% for platform in game.platforms_display %}
+                                <span class="badge bg-info text-dark me-1">{{ platform }}</span>
+                            {% endfor %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
+                    <p class="card-text"><strong>Release Date:</strong> <span class="badge bg-primary">{{ game.release_date }}</span></p>
+                    <p class="card-text"><strong>Age Rating:</strong> <span class="badge bg-warning text-dark">{{ game.age_rating }}</span></p>
+                    {% if game.age_rating_reason %}
+                    <p class="card-text"><small class="text-muted">({{ game.age_rating_reason }})</small></p>
+                    {% endif %}
+                    <p class="card-text"><strong>Publisher:</strong> {{ game.publisher }}</p>
+                    <p class="card-text"><strong>Developer:</strong> {{ game.developer }}</p>
+                    <p class="card-text"><strong>Metacritic Score:</strong> <span class="badge bg-success fs-5">{{ game.metacritic_score }}</span></p>
+                    
+                    {% if game.price and game.currency %}
+                    <p class="card-text"><strong>Price:</strong> {{ game.currency }} {{ game.price }}</p>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        {% if session.user_id %}
+                            {% if is_game_in_user_list %}
+                                <div class="alert alert-success d-flex align-items-center" role="alert">
+                                    <i class="fas fa-check-circle me-2"></i> This game is in your list!
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary" disabled>
+                                    <i class="fas fa-plus"></i> Add to My List (Already Added)
+                                </button>
+                                <form action="{{ url_for('remove_from_list', game_id=game.game_id) }}" method="POST" class="d-inline ms-2">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-minus"></i> Remove from My List
+                                    </button>
+                                </form>
+                            {% else %}
+                                <form action="{{ url_for('add_to_list', game_id=game.game_id) }}" method="POST">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Add to My List
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle me-2"></i> Log in to add this game to your list.
+                            </div>
+                            <a href="{{ url_for('login') }}" class="btn btn-primary">Log In</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <a href="{{ url_for('search') }}" class="btn btn-secondary mt-4"><i class="fas fa-arrow-left"></i> Back to Search</a>
+        </div>
+    </div>
 </div>
-{% if session.get('user_id') %}
-<a href="{{ url_for('add_to_list', game_id=game['game_id']) }}"
-  >Add to My List</a
->
-{% else %}
-<p><a href="/login">Log in</a> to save this game to your list.</p>
-{% endif %}
-
-<a href="{{ url_for('home') }}">Back to Home</a>
 {% endblock %}
