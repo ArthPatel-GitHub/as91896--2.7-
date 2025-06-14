@@ -1,4 +1,4 @@
-/* Basic Reset */
+/* General Reset */
 * {
     margin: 0;
     padding: 0;
@@ -7,142 +7,109 @@
 
 body {
     font-family: Arial, sans-serif;
-    line-height: 1.6;
+    background-color: #fff;
     color: #333;
-    background-color: #f4f4f4;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.container {
-    max-width: 500px;
-    margin: 50px auto;
-    padding: 20px;
-    background: white;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+/* Navbar */
+.navbar {
+    background-color: #212529;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-h1 {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #2c3e50;
+.navbar a {
+    color: white;
+    text-decoration: none;
+    margin-left: 15px;
+    font-size: 14px;
 }
 
-/* Flash Messages */
-.flash-messages {
-    margin-bottom: 20px;
+.navbar-left, .navbar-right {
+    display: flex;
+    align-items: center;
 }
 
-.flash-message {
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    border: 1px solid transparent;
-}
-
-.flash-success {
-    color: #155724;
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-}
-
-.flash-danger {
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-}
-
-.flash-error {
-    color: #721c24;
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-}
-
-.flash-warning {
-    color: #856404;
-    background-color: #fff3cd;
-    border-color: #ffeaa7;
-}
-
-.flash-info {
-    color: #0c5460;
-    background-color: #d1ecf1;
-    border-color: #bee5eb;
-}
-
-/* Forms */
-.register-form,
-.login-form {
-    margin-bottom: 20px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-label {
-    display: block;
-    margin-bottom: 5px;
+.navbar-left a {
     font-weight: bold;
-    color: #555;
-}
-
-input[type="text"],
-input[type="password"],
-input[type="date"] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
     font-size: 16px;
+    margin-right: 20px;
 }
 
-input[type="text"]:focus,
-input[type="password"]:focus,
-input[type="date"]:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0,123,255,0.3);
+/* Registration Form Container */
+.form-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
 }
 
-.btn-submit {
+form {
+    width: 300px;
+    border: 1px solid #ccc;
+    padding: 25px;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+}
+
+form h2 {
+    margin-bottom: 20px;
+    font-size: 18px;
+    text-align: center;
+}
+
+form input[type="text"],
+form input[type="password"],
+form input[type="date"] {
     width: 100%;
-    padding: 12px;
+    padding: 8px;
+    margin: 6px 0 12px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+form input[type="submit"] {
+    width: 100%;
+    padding: 8px;
     background-color: #007bff;
     color: white;
     border: none;
     border-radius: 4px;
-    font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s;
 }
 
-.btn-submit:hover {
+form input[type="submit"]:hover {
     background-color: #0056b3;
 }
 
-/* Links */
-.form-links {
+form p {
+    font-size: 13px;
+    margin-top: 10px;
     text-align: center;
-    margin-top: 20px;
 }
 
-.form-links p {
-    margin-bottom: 10px;
-}
-
-.form-links a {
+form a {
     color: #007bff;
     text-decoration: none;
 }
 
-.form-links a:hover {
+form a:hover {
     text-decoration: underline;
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-    .container {
-        margin: 20px;
-        padding: 15px;
-    }
+/* Footer */
+footer {
+    background-color: #f1f1f1;
+    text-align: center;
+    padding: 10px;
+    font-size: 12px;
+    color: #555;
 }

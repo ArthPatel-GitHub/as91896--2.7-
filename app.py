@@ -1,55 +1,51 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, date
 import sqlite3
 import difflib
 import random
 import re
 
-# Flask app setup
+# --- Flask Application Setup ---
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key_change_this_in_production'  # REMEMBER TO USE A STRONG, UNIQUE KEY
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SECRET_KEY'] = 'a_very_long_and_random_secret_key_for_production_use' # CHANGE THIS IN PRODUCTION!
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///user_information.db' # SQLAlchemy will manage this database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
-# Database file paths
-USER_DATABASE = 'user_data.db'
-POPULAR_GAMES_DATABASE = 'Popular_Games.db'
+# --- External Database Paths (for Popular Games, read-only) ---
+POPULAR_GAMES_DATABASE = 'Popular_Games.db' # This database will still be accessed directly via sqlite3
 
-# SQLAlchemy Models
+# --- Database Models (managed by Flask-SQLAlchemy) ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
-    dob = db.Column(db.String(10), nullable=True)
+    dob = db.Column(db.String(10), nullable=True) # YYYY-MM-DD string
+
+    user_games_entries = db.relationship('UserGame', backref='user', lazy=True, cascade="all, delete-orphan")
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return f'<User {self.username}>'
 
 class UserGame(db.Model):
-    __tablename__ = 'user_game'
+    # This model represents a user's personal game list entry
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    game_id = db.Column(db.Integer, nullable=False)
-    
+    game_id = db.Column(db.Integer, nullable=False) # Store the game_id from Popular_Games.db
+    date_added = db.Column(db.DateTime, default=datetime.utcnow) # Track when the game was added
+
     # Ensure unique combinations of user_id and game_id
     __table_args__ = (db.UniqueConstraint('user_id', 'game_id', name='unique_user_game'),)
 
-# Database connection functions
-def get_user_db():
-    """
-    Establishes a connection to the user_data.db database.
-    Stores the connection in Flask's global 'g' object to reuse it within a request.
-    Configures the connection to return rows as sqlite3.Row objects.
-    """
-    db_conn = getattr(g, '_user_database', None)
-    if db_conn is None:
-        db_conn = g._user_database = sqlite3.connect(USER_DATABASE)
-        db_conn.row_factory = sqlite3.Row  # Enable dictionary-like access to columns
-    return db_conn
+    def __repr__(self):
+        return f'<UserGame UserID:{self.user_id} GameID:{self.game_id}>'
 
+
+# --- Database connection functions for Popular_Games.db (read-only) ---
 def get_popular_games_db():
     """
     Establishes a connection to the Popular_Games.db database.
@@ -59,64 +55,53 @@ def get_popular_games_db():
     db_conn = getattr(g, '_popular_games_database', None)
     if db_conn is None:
         db_conn = g._popular_games_database = sqlite3.connect(POPULAR_GAMES_DATABASE)
-        db_conn.row_factory = sqlite3.Row
+        db_conn.row_factory = sqlite3.Row  # Enable dictionary-like access to columns
     return db_conn
 
-def create_user_table():
-    """
-    Initializes the user data database with necessary tables:
-    - 'users' table: Stores user authentication details (username, hashed password, DOB).
-    - 'user_game_list' table: Stores which games a user has added to their personal list.
-    This function is called once on application startup or within a @app.before_request context.
-    """
-    conn = get_user_db()
-    cursor = conn.cursor()  # Get a cursor object for executing SQL commands
-
-    # Create 'users' table with username, password hash, and date of birth (dob) - NO EMAIL
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL,
-            dob TEXT
-        )
-    ''')
-
-    # Create 'user_game_list' table to store games associated with each user
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS user_game_list (
-            user_id INTEGER NOT NULL,
-            game_id INTEGER NOT NULL,
-            PRIMARY KEY (user_id, game_id),
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )
-    ''')
-    conn.commit()  # Commit the changes to the database
-    print("User database (user_data.db) initialized successfully!")
-
-# Database connection cleanup
+# Database connection cleanup for Popular_Games.db
 @app.teardown_appcontext
 def close_db_connections(exception):
     """
     Closes database connections that were opened during the request.
+    This specifically closes the connection to Popular_Games.db.
+    SQLAlchemy connections are managed automatically.
     """
     db_pop_games = getattr(g, '_popular_games_database', None)
     if db_pop_games is not None:
         db_pop_games.close()
-    db_user = getattr(g, '_user_database', None)
-    if db_user is not None:
-        db_user.close()
 
-# Setup before each request
+# --- Setup for SQLAlchemy (to create tables for User and UserGame) ---
+with app.app_context():
+    db.create_all() # This creates tables for User and UserGame in database.db
+
+# --- Context Processor for Global Variables (e.g., datetime for footer) ---
 @app.before_request
-def before_request_setup():
-    """
-    This function runs before every incoming request.
-    It ensures that the 'users' and 'user_game_list' tables exist in user_data.db.
-    """
-    create_user_table()
+def before_request():
+    g.datetime = datetime
 
-# SQL Query Definitions
+# --- Utility functions ---
+def is_valid_email(email):
+    """
+    Simple email validation using regex.
+    """
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(email_pattern, email) is not None
+
+def calculate_age(dob_str):
+    """Calculates age from a YYYY-MM-DD date string."""
+    try:
+        birth_date = datetime.strptime(dob_str, "%Y-%m-%d").date()
+        today = date.today()
+        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+        return age
+    except ValueError:
+        return None # Invalid date format
+
+# --- SQL Query Definitions for Popular_Games.db ---
+# Note: The original query assumes `game_platforms` links to 8 platform_id columns.
+# This is an unusual schema. If `game_platforms` has a game_id and a single platform_id
+# column for a many-to-many relationship, this query needs adjustment.
+# I'm keeping it as is based on your provided original.
 GAME_SELECT = """
 SELECT
     g.game_id,
@@ -159,8 +144,7 @@ LEFT JOIN platforms p6 ON gp.platform_id6 = p6.platform_id
 LEFT JOIN platforms p7 ON gp.platform_id7 = p7.platform_id
 LEFT JOIN platforms p8 ON gp.platform_id8 = p8.platform_id
 """
-
-# Flask Routes
+# --- Flask Routes ---
 @app.route('/')
 def home():
     """
@@ -169,7 +153,20 @@ def home():
     """
     conn = get_popular_games_db()
     games = conn.execute(GAME_SELECT).fetchall()
-    return render_template("index.html", all_games=games)
+    
+    processed_games = []
+    for game_row in games:
+        game_dict = dict(game_row)
+        platforms_list = []
+        # Collect platforms from potentially multiple platform_nameX columns
+        for i in range(1, 9):
+            platform_key = f'platform_name{"" if i == 1 else i}'
+            if game_dict.get(platform_key):
+                platforms_list.append(game_dict[platform_key])
+        game_dict['platforms_display'] = list(set(platforms_list)) # Remove duplicates
+        processed_games.append(game_dict)
+
+    return render_template("index.html", all_games=processed_games)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -178,59 +175,70 @@ def register():
         return redirect(url_for('home'))
 
     if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
         dob = request.form.get('dob', '').strip()
-        username = request.form['username'].strip()
-        password = request.form['password']
 
-        print(f"DEBUG: Received - DOB: {dob}, Username: {username}, Password length: {len(password)}")
-
-        if not username or not password or not dob:
+        # Validation
+        if not username or not email or not password or not confirm_password or not dob:
             flash('All fields are required!', 'danger')
+            return redirect(url_for('register'))
+
+        if len(username) < 3:
+            flash('Username must be at least 3 characters long.', 'danger')
+            return redirect(url_for('register'))
+
+        if not is_valid_email(email):
+            flash('Please enter a valid email address.', 'danger')
             return redirect(url_for('register'))
 
         if len(password) < 6:
             flash('Password must be at least 6 characters long.', 'danger')
             return redirect(url_for('register'))
 
-        # Validate DOB format
-        if not re.match(r"^\d{4}-\d{2}-\d{2}$", dob):
-            flash('Invalid date format. Please use a valid date.', 'danger')
+        if password != confirm_password:
+            flash('Passwords do not match.', 'danger')
             return redirect(url_for('register'))
 
-        # Check if username already exists
-        try:
-            user_db = get_user_db()
-            print("DEBUG: Got user database connection")
-            
-            existing_user = user_db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
-            print(f"DEBUG: Existing user check: {existing_user}")
+        # Validate DOB format and minimum age (e.g., 13 years old)
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", dob):
+            flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
+            return redirect(url_for('register'))
+        
+        user_age = calculate_age(dob)
+        if user_age is None:
+            flash('Invalid date of birth provided.', 'danger')
+            return redirect(url_for('register'))
+        elif user_age < 13: # Example: Minimum age requirement
+            flash('You must be at least 13 years old to register.', 'danger')
+            return redirect(url_for('register'))
 
-            if existing_user:
+        # Check if username or email already exists using SQLAlchemy
+        existing_user = User.query.filter(
+            (User.username == username) | (User.email == email)
+        ).first()
+
+        if existing_user:
+            if existing_user.username == username:
                 flash('Username already exists. Please choose a different one.', 'danger')
-                return redirect(url_for('register'))
+            else: # existing_user.email == email
+                flash('Email already exists. Please use a different one or log in.', 'danger')
+            return redirect(url_for('register'))
 
-            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-            print("DEBUG: Password hashed successfully")
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+        new_user = User(username=username, email=email, password_hash=hashed_password, dob=dob)
 
-            # Insert new user
-            cursor = user_db.cursor()
-            cursor.execute("INSERT INTO users (username, password, dob) VALUES (?, ?, ?)",
-                          (username, hashed_password, dob))
-            user_db.commit()
-            print("DEBUG: User inserted successfully")
-            
+        try:
+            db.session.add(new_user)
+            db.session.commit()
             flash('Registration successful! You can now log in.', 'success')
             return redirect(url_for('login'))
-            
-        except sqlite3.Error as e:
-            print(f"DEBUG: SQLite Error: {e}")
-            user_db.rollback()
-            flash(f'Database error: {str(e)}', 'danger')
-            return redirect(url_for('register'))
         except Exception as e:
-            print(f"DEBUG: General Error: {e}")
-            flash(f'Unexpected error: {str(e)}', 'danger')
-            return redirect(url_for('register'))
+            db.session.rollback() # Rollback in case of any database error
+            flash(f'An unexpected error occurred during registration. Please try again. Error: {str(e)}', 'danger')
+            print(f"Registration Error: {e}") # Log the error for debugging
 
     return render_template('register.html')
 
@@ -241,26 +249,30 @@ def login():
         return redirect(url_for('home'))
 
     if request.method == 'POST':
-        username = request.form['username'].strip()
-        password = request.form['password']
+        username_or_email = request.form.get('username_or_email', '').strip()
+        password = request.form.get('password', '').strip()
 
-        if not username or not password:
-            flash('Username and Password are required!', 'danger')
+        if not username_or_email or not password:
+            flash('Username/Email and Password are required!', 'danger')
             return redirect(url_for('login'))
 
-        user_db = get_user_db()
-        user = user_db.execute("SELECT id, username, password FROM users WHERE username = ?", (username,)).fetchone()
+        # Find user by either username or email using SQLAlchemy
+        user = User.query.filter(
+            (User.username == username_or_email) | (User.email == username_or_email)
+        ).first()
 
-        if user and check_password_hash(user['password'], password):
-            session['user_id'] = user['id']
-            session['username'] = user['username']
+        if user and check_password_hash(user.password_hash, password):
+            session['user_id'] = user.id
+            session['username'] = user.username
+            session['email'] = user.email
             flash('Login successful!', 'success')
             return redirect(url_for('home'))
         else:
-            flash('Invalid username or password.', 'danger')
+            flash('Invalid username/email or password.', 'danger')
             return redirect(url_for('login'))
             
     return render_template('login.html')
+
 @app.route('/logout')
 def logout():
     """
@@ -268,6 +280,7 @@ def logout():
     """
     session.pop('user_id', None)
     session.pop('username', None)
+    session.pop('email', None)
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
@@ -280,52 +293,16 @@ def profile():
         flash('Please log in to view your profile.', 'info')
         return redirect(url_for('login'))
 
-    user_db = get_user_db()
-    user = user_db.execute(
-        "SELECT id, username, dob FROM users WHERE id = ?", 
-        (session['user_id'],)
-    ).fetchone()
+    user = User.query.get(session['user_id']) # Get user by ID using SQLAlchemy
 
     if not user:
         flash('User not found. Please log in again.', 'error')
         session.pop('user_id', None)
         session.pop('username', None)
+        session.pop('email', None)
         return redirect(url_for('login'))
 
     return render_template('profile.html', user=user)
-
-@app.route('/update_dob', methods=['POST'])
-def update_dob():
-    """
-    Handles updating the user's date of birth.
-    """
-    if 'user_id' not in session:
-        flash('Please log in to update your profile.', 'info')
-        return redirect(url_for('login'))
-
-    new_dob = request.form.get('dob', '').strip()
-    user_id = session['user_id']
-
-    if not new_dob:
-        flash('Date of Birth cannot be empty.', 'error')
-        return redirect(url_for('profile'))
-
-    # Basic date format validation (YYYY-MM-DD)
-    if not re.match(r"^\d{4}-\d{2}-\d{2}$", new_dob):
-        flash('Invalid date format. Please use YYYY-MM-DD.', 'error')
-        return redirect(url_for('profile'))
-
-    user_db = get_user_db()
-    try:
-        user_db.execute("UPDATE users SET dob = ? WHERE id = ?", (new_dob, user_id))
-        user_db.commit()
-        flash('Date of Birth updated successfully!', 'success')
-    except sqlite3.Error as e:
-        print(f"Database error updating DOB: {e}")
-        flash('An unexpected error occurred.', 'error')
-        user_db.rollback()
-    
-    return redirect(url_for('profile'))
 
 @app.route('/change_password', methods=['POST'])
 def change_password():
@@ -341,20 +318,20 @@ def change_password():
     confirm_new_password = request.form.get('confirm_new_password', '').strip()
     user_id = session['user_id']
 
-    user_db = get_user_db()
-    user = user_db.execute("SELECT password FROM users WHERE id = ?", (user_id,)).fetchone()
+    user = User.query.get(user_id) # Get user by ID using SQLAlchemy
 
     if not user:
         flash('User not found. Please log in again.', 'error')
         session.pop('user_id', None)
         session.pop('username', None)
+        session.pop('email', None)
         return redirect(url_for('login'))
 
     if not old_password or not new_password or not confirm_new_password:
         flash('All password fields are required.', 'error')
         return redirect(url_for('profile'))
 
-    if not check_password_hash(user['password'], old_password):
+    if not check_password_hash(user.password_hash, old_password):
         flash('Incorrect old password.', 'error')
         return redirect(url_for('profile'))
 
@@ -367,15 +344,51 @@ def change_password():
         return redirect(url_for('profile'))
 
     try:
-        hashed_new_password = generate_password_hash(new_password)
-        user_db.execute("UPDATE users SET password = ? WHERE id = ?", (hashed_new_password, user_id))
-        user_db.commit()
+        user.password_hash = generate_password_hash(new_password)
+        db.session.commit() # Commit changes to database via SQLAlchemy
         flash('Password updated successfully!', 'success')
-    except sqlite3.Error as e:
+    except Exception as e:
+        db.session.rollback() # Rollback in case of error
         print(f"Database error changing password: {e}")
-        flash('An unexpected error occurred.', 'error')
-        user_db.rollback()
+        flash('An unexpected error occurred while updating password.', 'error')
     
+    return redirect(url_for('profile'))
+
+@app.route('/update_dob', methods=['POST'])
+def update_dob():
+    if 'user_id' not in session:
+        flash('Please log in to update your profile.', 'warning')
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+    if not user:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
+
+    new_dob = request.form.get('dob')
+    if new_dob:
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", new_dob):
+            flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
+            return redirect(url_for('profile'))
+        
+        user_age = calculate_age(new_dob)
+        if user_age is None:
+            flash('Invalid date of birth provided.', 'danger')
+            return redirect(url_for('profile'))
+        elif user_age < 13: # Example: Minimum age requirement
+            flash('You must be at least 13 years old. DOB not updated.', 'danger')
+            return redirect(url_for('profile'))
+
+        try:
+            user.dob = new_dob
+            db.session.commit()
+            flash('Date of birth updated successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'An unexpected error occurred: {e}', 'danger')
+    else:
+        flash('Date of birth cannot be empty.', 'danger')
+
     return redirect(url_for('profile'))
 
 @app.route('/search', methods=["GET", "POST"])
@@ -399,136 +412,159 @@ def search():
 
     results = []
     search_type = None
+    
+    # Store form values to pre-fill the search form on re-render
+    search_term_val = ""
+    score_min_val = ""
+    score_max_val = ""
+    date_min_val = ""
+    date_max_val = ""
+    selected_age_rating = ""
+    selected_platforms_ids = [] # Use platform IDs for comparison
 
     if request.method == "POST":
         filter_type = request.form.get("filter")
-        query = GAME_SELECT + " WHERE 1=1 "
+        query_parts = [GAME_SELECT, "WHERE 1=1"] # Start with a true condition for easy AND additions
         params = []
         error = None
 
         if filter_type == "text":
-            search_term = request.form.get("search_term", "").strip()
-            if search_term:
+            search_term_val = request.form.get("search_term", "").strip()
+            if search_term_val:
                 candidates = game_titles + dev_names + pub_names
-                close_matches = difflib.get_close_matches(search_term, candidates, n=1, cutoff=0.6)
-                best_match = close_matches[0] if close_matches else search_term
+                # Use difflib.get_close_matches for a slightly fuzzy search on input, then use that for LIKE
+                # Note: This is an expensive operation for large datasets.
+                close_matches = difflib.get_close_matches(search_term_val, candidates, n=1, cutoff=0.6)
+                best_match = close_matches[0] if close_matches else search_term_val
                 wildcard = f"%{best_match}%"
                 
-                query += """
+                query_parts.append("""
                     AND (g.title LIKE ? COLLATE NOCASE
                         OR d.name LIKE ? COLLATE NOCASE
                         OR pub.name LIKE ? COLLATE NOCASE
-                        OR g.genre LIKE ? COLLATE NOCASE)
-                    """
-                params.extend([wildcard, wildcard, wildcard, wildcard])
-                search_type = "text"
+                        OR g.genre LIKE ? COLLATE NOCASE
+                        OR g.description LIKE ? COLLATE NOCASE)
+                    """)
+                params.extend([wildcard, wildcard, wildcard, wildcard, wildcard])
+                search_type = "Text Search"
             else:
                 error = "Please enter a search term."
 
         elif filter_type == "score":
-            score_min = request.form.get("score_min", "").strip()
-            score_max = request.form.get("score_max", "").strip()
+            score_min_val = request.form.get("score_min", "").strip()
+            score_max_val = request.form.get("score_max", "").strip()
             try:
-                min_val = int(score_min) if score_min else min_score
-                max_val = int(score_max) if score_max else max_score
+                min_val = int(score_min_val) if score_min_val else min_score
+                max_val = int(score_max_val) if score_max_val else max_score
 
                 if not (0 <= min_val <= 100 and 0 <= max_val <= 100 and min_val <= max_val):
                     error = "Score values must be between 0 and 100, and min score cannot exceed max score."
                 else:
-                    query += " AND g.metacritic_score >= ? AND g.metacritic_score <= ? "
+                    query_parts.append(" AND g.metacritic_score >= ? AND g.metacritic_score <= ? ")
                     params.extend([min_val, max_val])
-                    search_type = "score"
+                    search_type = f"Metacritic Score: {min_val}-{max_val}"
             except ValueError:
                 error = "Invalid score values. Please enter numbers only."
 
         elif filter_type == "date":
-            date_min = request.form.get("date_min", "").strip()
-            date_max = request.form.get("date_max", "").strip()
+            date_min_val = request.form.get("date_min", "").strip()
+            date_max_val = request.form.get("date_max", "").strip()
             try:
-                if date_min and date_max:
-                    date_min_obj = datetime.strptime(date_min, "%Y-%m-%d")
-                    date_max_obj = datetime.strptime(date_max, "%Y-%m-%d")
+                if date_min_val and date_max_val:
+                    date_min_obj = datetime.strptime(date_min_val, "%Y-%m-%d")
+                    date_max_obj = datetime.strptime(date_max_val, "%Y-%m-%d")
                     
-                    allowed_min = datetime(1980, 1, 1)
-                    allowed_max = datetime.now()
+                    # Ensure valid date range (e.g., after 1980, before today)
+                    allowed_min_date = datetime(1980, 1, 1).date()
+                    allowed_max_date = date.today()
 
-                    if not (allowed_min <= date_min_obj <= date_max_obj <= allowed_max):
-                        error = f"Dates must be between {allowed_min.strftime('%Y-%m-%d')} and {allowed_max.strftime('%Y-%m-%d')}, and start date cannot be after end date."
+                    if not (allowed_min_date <= date_min_obj.date() <= date_max_obj.date() <= allowed_max_date):
+                        error = f"Dates must be between {allowed_min_date.strftime('%Y-%m-%d')} and {allowed_max_date.strftime('%Y-%m-%d')}, and start date cannot be after end date."
                     else:
-                        query += " AND g.release_date BETWEEN ? AND ? "
-                        params.extend([date_min, date_max])
-                        search_type = "date"
+                        query_parts.append(" AND g.release_date BETWEEN ? AND ? ")
+                        params.extend([date_min_val, date_max_val])
+                        search_type = f"Release Date: {date_min_val} to {date_max_val}"
                 else:
                     error = "Please provide both start and end dates."
             except ValueError:
                 error = "Invalid date format. Use YYYY-MM-DD."
 
         elif filter_type == "age_rating":
-            age_rating = request.form.get("age_rating", "").strip().upper()
+            selected_age_rating = request.form.get("age_rating", "").strip().upper()
             allowed_age_ratings = ["G", "PG", "M", "R13", "R16", "R18"]
-            if age_rating and age_rating in allowed_age_ratings:
-                query += " AND ar.rating = ? "
-                params.append(age_rating)
-                search_type = "age_rating"
+            if selected_age_rating and selected_age_rating in allowed_age_ratings:
+                query_parts.append(" AND ar.rating = ? ")
+                params.append(selected_age_rating)
+                search_type = f"Age Rating: {selected_age_rating}"
             else:
                 error = f"Invalid age rating. Allowed ratings: {', '.join(allowed_age_ratings)}."
 
         elif filter_type == "platform":
-            selected_plats_ids = request.form.getlist("platforms")
-            if selected_plats_ids:
+            selected_platforms_ids = request.form.getlist("platforms") # Get list of selected platform IDs
+            if selected_platforms_ids:
+                # Build a dynamic OR condition for each platform_id column
+                # This is still a bit clunky due to your database schema (multiple platform_id columns)
                 platform_conditions = []
-                for i in range(1, 9):
-                    platform_conditions.append(f"gp.platform_id{'' if i == 1 else i} IN ({','.join('?' * len(selected_plats_ids))})")
+                for i in range(1, 9): # Iterate through platform_id, platform_id2, ..., platform_id8
+                    platform_conditions.append(f"gp.platform_id{'' if i == 1 else i} IN ({','.join('?' * len(selected_platforms_ids))})")
                 
-                query += " AND (" + " OR ".join(platform_conditions) + ")"
+                query_parts.append(" AND (" + " OR ".join(platform_conditions) + ")")
                 
-                for _ in range(8):
-                    params.extend(selected_plats_ids)
-                search_type = "platform"
+                # Extend params for each platform_id column condition
+                for _ in range(8): # Each platform_idX column needs its own set of parameters
+                    params.extend(selected_platforms_ids)
+                
+                search_type = "Platform"
             else:
                 error = "Please select at least one platform."
+        
+        # If no filter type was selected or something went wrong
+        if not filter_type and not error:
+            error = "Please select a search filter."
 
         if error:
-            flash(error, 'error')
-            return render_template("search.html",
-                                   publishers=publishers,
-                                   developers=developers,
-                                   min_score=min_score,
-                                   max_score=max_score,
-                                   platforms=all_platforms)
+            flash(error, 'danger')
         else:
             try:
-                results = conn.execute(query, tuple(params)).fetchall()
+                full_query = " ".join(query_parts)
+                results_raw = conn.execute(full_query, tuple(params)).fetchall()
+                
                 processed_results = []
-                for game_row in results:
+                for game_row in results_raw:
                     game_dict = dict(game_row)
                     platforms_list = []
+                    # Collect platforms from potentially multiple platform_nameX columns
                     for i in range(1, 9):
                         platform_key = f'platform_name{"" if i == 1 else i}'
                         if game_dict.get(platform_key):
                             platforms_list.append(game_dict[platform_key])
-                            del game_dict[platform_key]
-                    game_dict['platforms_display'] = list(set(platforms_list))
+                            # Optional: remove the individual platform_nameX keys if not needed for display
+                            # del game_dict[platform_key]
+                    game_dict['platforms_display'] = list(set(platforms_list)) # Remove duplicates
                     processed_results.append(game_dict)
+                results = processed_results
                 
-                return render_template("search_results.html",
-                                       results=processed_results,
-                                       search_type=filter_type)
             except sqlite3.Error as e:
-                flash(f"Database error during search: {e}", 'error')
-                return render_template("search.html",
-                                       publishers=publishers,
-                                       developers=developers,
-                                       min_score=min_score,
-                                       max_score=max_score,
-                                       platforms=all_platforms)
+                flash(f"Database error during search: {e}", 'danger')
+                results = [] # Clear results on error
     
     return render_template("search.html",
                            publishers=publishers,
                            developers=developers,
                            min_score=min_score,
                            max_score=max_score,
-                           platforms=all_platforms)
+                           platforms=all_platforms,
+                           results=results,
+                           search_type=search_type,
+                           # Pass back current form values for persistence
+                           search_term=search_term_val,
+                           score_min=score_min_val,
+                           score_max=score_max_val,
+                           date_min=date_min_val,
+                           date_max=date_max_val,
+                           selected_age_rating=selected_age_rating,
+                           selected_platforms=selected_platforms_ids # Pass IDs to re-check checkboxes
+                           )
 
 @app.route('/game/<int:game_id>')
 def game_detail(game_id):
@@ -550,16 +586,15 @@ def game_detail(game_id):
         platform_key = f'platform_name{"" if i == 1 else i}'
         if game.get(platform_key):
             platforms_list.append(game[platform_key])
-            del game[platform_key]
+            # del game[platform_key] # Optional: clean up dict
     game['platforms_display'] = list(set(platforms_list))
 
     is_game_in_user_list = False
     if 'user_id' in session:
         user_id = session['user_id']
-        user_db = get_user_db()
-        entry = user_db.execute("SELECT 1 FROM user_game_list WHERE user_id = ? AND game_id = ?",
-                                 (user_id, game_id)).fetchone()
-        if entry:
+        # Check using SQLAlchemy's UserGame model
+        existing_entry = UserGame.query.filter_by(user_id=user_id, game_id=game_id).first()
+        if existing_entry:
             is_game_in_user_list = True
 
     return render_template("game_detail.html", game=game, is_game_in_user_list=is_game_in_user_list)
@@ -587,14 +622,16 @@ def my_games():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    user_db = get_user_db()
-    game_id_rows = user_db.execute("SELECT game_id FROM user_game_list WHERE user_id = ?", (user_id,)).fetchall()
-    game_ids = [row['game_id'] for row in game_id_rows]
+    
+    # Get game_ids from UserGame using SQLAlchemy
+    user_game_entries = UserGame.query.filter_by(user_id=user_id).order_by(UserGame.date_added.desc()).all()
+    game_ids = [entry.game_id for entry in user_game_entries]
     
     if not game_ids:
         return render_template('my_games.html', user_games=[])
 
     popular_games_db = get_popular_games_db()
+    # Use IN clause to fetch all details for these game_ids from Popular_Games.db
     placeholders = ','.join('?' * len(game_ids))
     
     query = f"{GAME_SELECT} WHERE g.game_id IN ({placeholders})"
@@ -645,22 +682,20 @@ def add_to_list(game_id):
         flash('Game not found. Cannot add to your list.', 'error')
         return redirect(url_for('search'))
 
-    user_db = get_user_db()
-    try:
-        existing_entry = user_db.execute("SELECT 1 FROM user_game_list WHERE user_id = ? AND game_id = ?",
-                                         (user_id, game_id)).fetchone()
-        if existing_entry:
-            flash('This game is already in your list!', 'warning')
-            return redirect(url_for('my_games'))
-        else:
-            user_db.execute("INSERT INTO user_game_list (user_id, game_id) VALUES (?, ?)",
-                            (user_id, game_id))
-            user_db.commit()
+    # Check and add using SQLAlchemy's UserGame model
+    existing_entry = UserGame.query.filter_by(user_id=user_id, game_id=game_id).first()
+    if existing_entry:
+        flash('This game is already in your list!', 'warning')
+    else:
+        new_entry = UserGame(user_id=user_id, game_id=game_id)
+        try:
+            db.session.add(new_entry)
+            db.session.commit()
             flash('Game added to your list successfully!', 'success')
-    except sqlite3.Error as e:
-        print(f"Database error adding game to list: {e}")
-        flash('An unexpected error occurred.', 'error')
-        user_db.rollback()
+        except Exception as e:
+            db.session.rollback()
+            print(f"SQLAlchemy error adding game to list: {e}")
+            flash('An unexpected error occurred while adding the game.', 'error')
 
     return redirect(url_for('game_detail', game_id=game_id))
 
@@ -674,26 +709,27 @@ def remove_from_list(game_id):
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    user_db = get_user_db()
-    try:
-        cursor = user_db.cursor()
-        cursor.execute("DELETE FROM user_game_list WHERE user_id = ? AND game_id = ?",
-                       (user_id, game_id))
-        if cursor.rowcount > 0:
-            user_db.commit()
-            flash('Game removed from your list!', 'success')
-        else:
-            flash('Game not found in your list.', 'warning')
-    except sqlite3.Error as e:
-        print(f"Database error removing game from list: {e}")
-        flash('An unexpected error occurred.', 'error')
-        user_db.rollback()
     
-    return redirect(url_for('my_games'))
+    # Find and delete using SQLAlchemy's UserGame model
+    entry_to_remove = UserGame.query.filter_by(user_id=user_id, game_id=game_id).first()
+    
+    if entry_to_remove:
+        try:
+            db.session.delete(entry_to_remove)
+            db.session.commit()
+            flash('Game removed from your list!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            print(f"SQLAlchemy error removing game from list: {e}")
+            flash('An unexpected error occurred while removing the game.', 'error')
+    else:
+        flash('Game not found in your list.', 'warning')
+    
+    # Redirect back to 'my_games' if that was the referrer, otherwise to game detail
+    if request.referrer and 'my_games' in request.referrer:
+        return redirect(url_for('my_games'))
+    return redirect(url_for('game_detail', game_id=game_id))
 
-# Application Entry Point
+# --- Application Entry Point ---
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()  # Create SQLAlchemy tables
-        create_user_table()  # Create raw SQL tables
     app.run(debug=True)
