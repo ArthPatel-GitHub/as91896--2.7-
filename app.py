@@ -22,12 +22,8 @@ POPULAR_GAMES_DATABASE = 'Popular_Games.db'
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
-    dob = db.Column(db.String(10), nullable=False)
-
-    # Relationship to UserGame model (if you have one)
-    # user_games = db.relationship('UserGame', backref='user', lazy=True)
+    dob = db.Column(db.String(10), nullable=True)
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -69,20 +65,19 @@ def get_popular_games_db():
 def create_user_table():
     """
     Initializes the user data database with necessary tables:
-    - 'users' table: Stores user authentication details (username, hashed password, email, DOB).
+    - 'users' table: Stores user authentication details (username, hashed password, DOB).
     - 'user_game_list' table: Stores which games a user has added to their personal list.
     This function is called once on application startup or within a @app.before_request context.
     """
     conn = get_user_db()
     cursor = conn.cursor()  # Get a cursor object for executing SQL commands
 
-    # Create 'users' table with username, password hash, email, and date of birth (dob)
+    # Create 'users' table with username, password hash, and date of birth (dob) - NO EMAIL
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
             dob TEXT
         )
     ''')
@@ -178,75 +173,66 @@ def home():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """
-    Handles user registration using raw SQL instead of SQLAlchemy ORM.
-    """
-    if request.method == 'POST':
-        # Use .get() method instead of direct key access to avoid KeyError
-        username = request.form.get('username', '').strip()
-        email = request.form.get('email', '').strip()
-        password = request.form.get('password', '').strip()
-        dob = request.form.get('dob', '').strip()
+    if session.get('user_id'):
+        flash('You are already logged in.', 'info')
+        return redirect(url_for('home'))
 
-        # Basic validation
-        if not username or not email or not password or not dob:
+    if request.method == 'POST':
+        dob = request.form.get('dob', '').strip()
+        username = request.form['username'].strip()
+        password = request.form['password']
+
+        print(f"DEBUG: Received - DOB: {dob}, Username: {username}, Password length: {len(password)}")
+
+        if not username or not password or not dob:
             flash('All fields are required!', 'danger')
             return redirect(url_for('register'))
 
-        # Simple email format validation
-        if '@' not in email or '.' not in email:
-            flash('Please enter a valid email address.', 'danger')
+        if len(password) < 6:
+            flash('Password must be at least 6 characters long.', 'danger')
             return redirect(url_for('register'))
 
-        # Check if username OR email already exists
-        user_db = get_user_db()
-        existing_user_by_username = user_db.execute(
-            "SELECT id FROM users WHERE username = ?", (username,)
-        ).fetchone()
-        existing_user_by_email = user_db.execute(
-            "SELECT id FROM users WHERE email = ?", (email,)
-        ).fetchone()
-
-        if existing_user_by_username:
-            flash('Username already exists. Please choose a different one.', 'danger')
-            return redirect(url_for('register'))
-        if existing_user_by_email:
-            flash('Email address is already registered. Please use a different one or log in.', 'danger')
+        # Validate DOB format
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", dob):
+            flash('Invalid date format. Please use a valid date.', 'danger')
             return redirect(url_for('register'))
 
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        
+        # Check if username already exists
         try:
-            user_db.execute(
-                "INSERT INTO users (username, email, password, dob) VALUES (?, ?, ?, ?)",
-                (username, email, hashed_password, dob)
-            )
+            user_db = get_user_db()
+            print("DEBUG: Got user database connection")
+            
+            existing_user = user_db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
+            print(f"DEBUG: Existing user check: {existing_user}")
+
+            if existing_user:
+                flash('Username already exists. Please choose a different one.', 'danger')
+                return redirect(url_for('register'))
+
+            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+            print("DEBUG: Password hashed successfully")
+
+            # Insert new user
+            cursor = user_db.cursor()
+            cursor.execute("INSERT INTO users (username, password, dob) VALUES (?, ?, ?)",
+                          (username, hashed_password, dob))
             user_db.commit()
+            print("DEBUG: User inserted successfully")
+            
             flash('Registration successful! You can now log in.', 'success')
             return redirect(url_for('login'))
+            
         except sqlite3.Error as e:
+            print(f"DEBUG: SQLite Error: {e}")
             user_db.rollback()
-            flash(f'An unexpected error occurred during registration. Please try again.', 'danger')
-            print(f"Registration Error: {e}")
+            flash(f'Database error: {str(e)}', 'danger')
+            return redirect(url_for('register'))
+        except Exception as e:
+            print(f"DEBUG: General Error: {e}")
+            flash(f'Unexpected error: {str(e)}', 'danger')
+            return redirect(url_for('register'))
 
     return render_template('register.html')
-
-# Also add this debug route temporarily to see what's being sent:
-@app.route('/debug_form', methods=['POST'])
-def debug_form():
-    """
-    Temporary debug route to see what form data is being sent
-    """
-    print("Form data received:")
-    for key, value in request.form.items():
-        print(f"  {key}: {value}")
-    
-    print("Request method:", request.method)
-    print("Content type:", request.content_type)
-    
-    return "Debug info printed to console"
-
-# ... (rest of your app.py code above this, including imports, app setup, models, and seeding) ...
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -255,25 +241,26 @@ def login():
         return redirect(url_for('home'))
 
     if request.method == 'POST':
-        # This single field will accept either username or email
-        identifier = request.form['username'] # The input field will still be named 'username'
+        username = request.form['username'].strip()
         password = request.form['password']
 
-        # Attempt to find user by either username OR email
-        user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
+        if not username or not password:
+            flash('Username and Password are required!', 'danger')
+            return redirect(url_for('login'))
 
-        if user and check_password_hash(user.password_hash, password):
-            session['user_id'] = user.id
-            session['username'] = user.username # Store username in session
+        user_db = get_user_db()
+        user = user_db.execute("SELECT id, username, password FROM users WHERE username = ?", (username,)).fetchone()
+
+        if user and check_password_hash(user['password'], password):
+            session['user_id'] = user['id']
+            session['username'] = user['username']
             flash('Login successful!', 'success')
             return redirect(url_for('home'))
         else:
-            flash('Invalid username/email or password.', 'danger')
+            flash('Invalid username or password.', 'danger')
             return redirect(url_for('login'))
             
     return render_template('login.html')
-
-# ... (rest of your app.py code below this) ...
 @app.route('/logout')
 def logout():
     """
@@ -295,7 +282,7 @@ def profile():
 
     user_db = get_user_db()
     user = user_db.execute(
-        "SELECT id, username, email, dob FROM users WHERE id = ?", 
+        "SELECT id, username, dob FROM users WHERE id = ?", 
         (session['user_id'],)
     ).fetchone()
 
@@ -632,7 +619,10 @@ def my_games():
             'publisher': game_dict['publisher'],
             'developer': game_dict['developer'],
             'metacritic_score': game_dict['metacritic_score'],
-            'description': game_dict['description']
+            'description': game_dict['description'],
+            'cover_image': game_dict.get('cover_image', ''),
+            'price': game_dict.get('price', 'N/A'),
+            'currency': game_dict.get('currency', '')
         })
 
     return render_template('my_games.html', user_games=user_games)
