@@ -5,7 +5,7 @@ from datetime import datetime, date
 import sqlite3
 import difflib
 import random
-import re
+import re # This is the library used for regular expressions
 
 # --- Flask Application Setup ---
 app = Flask(__name__)
@@ -97,6 +97,41 @@ def calculate_age(dob_str):
     except ValueError:
         return None # Invalid date format
 
+# Function to check password strength (new)
+def is_strong_password(password):
+    """
+    Checks if a password meets complexity requirements:
+    - At least 8 characters long
+    - Contains at least one uppercase letter
+    - Contains at least one lowercase letter
+    - Contains at least one digit
+    - Contains at least one special character (e.g., !@#$%^&*()_+-=[]{};':"|,.<>/?`~)
+    """
+    if len(password) < 8:
+        return False
+    if not re.search(r"[A-Z]", password):
+        return False
+    if not re.search(r"[a-z]", password):
+        return False
+    if not re.search(r"\d", password):
+        return False
+    if not re.search(r"[!@#$%^&*()_+\-=\[\]{};':\"|,.<>/?`~]", password):
+        return False
+    return True
+
+# Function to validate username (new)
+def is_valid_username(username):
+    """
+    Checks if a username contains only alphanumeric characters and underscores.
+    - Between 3 and 20 characters long.
+    """
+    if not 3 <= len(username) <= 20:
+        return False
+    # Only allow letters, numbers, and underscores
+    if not re.match(r"^[a-zA-Z0-9_]+$", username):
+        return False
+    return True
+
 # --- SQL Query Definitions for Popular_Games.db ---
 # Note: The original query assumes `game_platforms` links to 8 platform_id columns.
 # This is an unusual schema. If `game_platforms` has a game_id and a single platform_id
@@ -174,6 +209,9 @@ def register():
         flash('You are already logged in.', 'info')
         return redirect(url_for('home'))
 
+    # Get today's date for use in the template to set max attribute for DOB input
+    today_date_str = date.today().strftime('%Y-%m-%d')
+
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()
@@ -186,27 +224,45 @@ def register():
             flash('All fields are required!', 'danger')
             return redirect(url_for('register'))
 
-        if len(username) < 3:
-            flash('Username must be at least 3 characters long.', 'danger')
+        # Refinement: Username validation
+        if not is_valid_username(username):
+            flash('Username must be 3-20 characters long and contain only letters, numbers, and underscores.', 'danger')
             return redirect(url_for('register'))
 
         if not is_valid_email(email):
             flash('Please enter a valid email address.', 'danger')
             return redirect(url_for('register'))
 
-        if len(password) < 6:
-            flash('Password must be at least 6 characters long.', 'danger')
+        # Refinement: Password complexity validation
+        if not is_strong_password(password):
+            flash('Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.', 'danger')
             return redirect(url_for('register'))
 
         if password != confirm_password:
             flash('Passwords do not match.', 'danger')
             return redirect(url_for('register'))
 
-        # Validate DOB format and minimum age (e.g., 13 years old)
+        # Validate DOB format and minimum/maximum age
         if not re.match(r"^\d{4}-\d{2}-\d{2}$", dob):
             flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
             return redirect(url_for('register'))
         
+        try:
+            birth_date_obj = datetime.strptime(dob, "%Y-%m-%d").date()
+            current_date = date.today()
+            min_dob_allowed = date(1925, 1, 1) # Nothing before 1925
+        except ValueError:
+            flash('Invalid date of birth provided. Please use a valid date.', 'danger')
+            return redirect(url_for('register'))
+
+        if birth_date_obj > current_date:
+            flash('Date of birth cannot be in the future.', 'danger')
+            return redirect(url_for('register'))
+
+        if birth_date_obj < min_dob_allowed:
+            flash(f'Date of birth cannot be before {min_dob_allowed.year}.', 'danger')
+            return redirect(url_for('register'))
+
         user_age = calculate_age(dob)
         if user_age is None:
             flash('Invalid date of birth provided.', 'danger')
@@ -240,7 +296,7 @@ def register():
             flash(f'An unexpected error occurred during registration. Please try again. Error: {str(e)}', 'danger')
             print(f"Registration Error: {e}") # Log the error for debugging
 
-    return render_template('register.html')
+    return render_template('register.html', today_date_str=today_date_str)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -302,7 +358,10 @@ def profile():
         session.pop('email', None)
         return redirect(url_for('login'))
 
-    return render_template('profile.html', user=user)
+    # Get today's date for use in the template to set max attribute for DOB input
+    today_date_str = date.today().strftime('%Y-%m-%d')
+
+    return render_template('profile.html', user=user, today_date_str=today_date_str)
 
 @app.route('/change_password', methods=['POST'])
 def change_password():
@@ -339,8 +398,9 @@ def change_password():
         flash('New passwords do not match.', 'error')
         return redirect(url_for('profile'))
     
-    if len(new_password) < 6:
-        flash('New password must be at least 6 characters long.', 'error')
+    # Refinement: Password complexity validation for change password
+    if not is_strong_password(new_password):
+        flash('New password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.', 'danger')
         return redirect(url_for('profile'))
 
     try:
@@ -371,6 +431,22 @@ def update_dob():
             flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
             return redirect(url_for('profile'))
         
+        try:
+            birth_date_obj = datetime.strptime(new_dob, "%Y-%m-%d").date()
+            current_date = date.today()
+            min_dob_allowed = date(1925, 1, 1) # Nothing before 1925
+        except ValueError:
+            flash('Invalid date of birth provided. Please use a valid date.', 'danger')
+            return redirect(url_for('profile'))
+
+        if birth_date_obj > current_date:
+            flash('Date of birth cannot be in the future. DOB not updated.', 'danger')
+            return redirect(url_for('profile'))
+
+        if birth_date_obj < min_dob_allowed:
+            flash(f'Date of birth cannot be before {min_dob_allowed.year}. DOB not updated.', 'danger')
+            return redirect(url_for('profile'))
+
         user_age = calculate_age(new_dob)
         if user_age is None:
             flash('Invalid date of birth provided.', 'danger')

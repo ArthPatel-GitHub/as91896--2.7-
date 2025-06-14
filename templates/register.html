@@ -20,14 +20,20 @@
         <p>
             <label for="username">Username:</label><br>
             <input type="text" id="username" name="username" required>
+            <!-- Inline requirement for Username -->
+            <small class="form-text text-muted">Username must be 3-20 characters long and contain only letters, numbers, and underscores.</small>
         </p>
         <p>
             <label for="email">Email:</label><br>
             <input type="email" id="email" name="email" required>
+            <!-- Inline requirement for Email -->
+            <small class="form-text text-muted">Please enter a valid email address (e.g., example@domain.com).</small>
         </p>
         <p>
             <label for="password">Password:</label><br>
             <input type="password" id="password" name="password" required>
+            <!-- Inline requirement for Password -->
+            <small class="form-text text-muted">Password must be at least 8 characters long and include: uppercase letters, lowercase letters, numbers, and special characters (e.g., !@#$%^&*).</small>
         </p>
         <p>
             <label for="confirm_password">Confirm Password:</label><br>
@@ -35,7 +41,10 @@
         </p>
         <p>
             <label for="dob">Date of Birth (YYYY-MM-DD):</label><br>
-            <input type="date" id="dob" name="dob" placeholder="YYYY-MM-DD">
+            <input type="date" id="dob" name="dob" placeholder="YYYY-MM-DD"
+                   min="1925-01-01" max="{{ today_date_str }}" required>
+            <!-- Inline requirement for Date of Birth -->
+            <small class="form-text text-muted">Date of birth must be between 1925-01-01 and today's date. (Minimum age: 13)</small>
         </p>
         <p>
             <button type="submit">Register</button>
@@ -43,4 +52,16 @@
     </form>
     <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a>.</p>
 </div>
+
+<script>
+    // Get today's date in YYYY-MM-DD format for setting the max attribute dynamically
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayDateStr = `${year}-${month}-${day}`;
+
+    // Set the max attribute for the date of birth input
+    document.getElementById('dob').setAttribute('max', todayDateStr);
+</script>
 {% endblock %}
