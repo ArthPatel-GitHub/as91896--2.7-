@@ -3,47 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Game Database{% endblock %}</title>
+    <title>{% block title %}My Game Site{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <header>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <nav class="navbar">
-                <a href="{{ url_for('home') }}" class="logo">🎮 GameHub</a>
-                <ul class="nav-links">
-                    <li><a href="{{ url_for('home') }}">Home</a></li>
-                    <li><a href="{{ url_for('search') }}">Search</a></li>
-                    <li><a href="{{ url_for('random_game') }}">Random Game</a></li>
+            <!-- Left side - Brand and main navigation -->
+            <div class="d-flex align-items-center">
+                <a class="navbar-brand me-4" href="{{ url_for('home') }}">
+                    <i class="fas fa-gamepad me-2"></i>My Game Site
+                </a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Left navigation items -->
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">
+                            <i class="fas fa-home me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('search') }}">
+                            <i class="fas fa-search me-1"></i>Search
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('random_game') }}">
+                            <i class="fas fa-random me-1"></i>Random Game
+                        </a>
+                    </li>
                     {% if session.user_id %}
-                        <li><a href="{{ url_for('my_games') }}">My Games</a></li>
-                        <li><a href="{{ url_for('profile') }}">Profile</a></li>
-                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                    {% else %}
-                        <li><a href="{{ url_for('login') }}">Login</a></li>
-                        <li><a href="{{ url_for('register') }}">Register</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('my_games') }}">
+                            <i class="fas fa-list me-1"></i>My Games
+                        </a>
+                    </li>
                     {% endif %}
                 </ul>
-            </nav>
-        </div>
-    </header>
 
-    <main>
-        <div class="container">
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} fade-in">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <!-- Page Content -->
-            {% block content %}{% endblock %}
+                <!-- Right navigation items -->
+                <ul class="navbar-nav">
+                    {% if session.user_id %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-1"></i>{{ session.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('profile') }}">
+                                    <i class="fas fa-user-cog me-2"></i>Profile
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">
+                                <i class="fas fa-user-plus me-1"></i>Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show animate-fade-in-up" role="alert">
+                        {% if category == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                        {% elif category == 'danger' or category == 'error' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% elif category == 'warning' %}
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                        {% elif category == 'info' %}
+                            <i class="fas fa-info-circle me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
     </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; {{ g.datetime.now().year }} My Game Site. Made by Arth P. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">Built with <i class="fas fa-heart text-danger"></i> for gamers</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

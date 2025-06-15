@@ -1,34 +1,103 @@
 {% extends "base.html" %}
 
-{% block title %}Login - My Awesome Game Site{% endblock %}
+{% block title %}Login - My Game Site{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h2>Login to Your Account</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-soft animate-fade-in-up">
+                <div class="card-header text-center">
+                    <i class="fas fa-sign-in-alt fa-2x mb-2"></i>
+                    <h4 class="mb-0">Welcome Back!</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('login') }}">
+                        <div class="mb-3">
+                            <label for="username_or_email" class="form-label">
+                                <i class="fas fa-user me-2"></i>Username or Email
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="username_or_email" 
+                                   name="username_or_email" 
+                                   placeholder="Enter your username or email address"
+                                   required>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                You can use either your username or email address to log in.
+                            </div>
+                        </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul>
-                {% for category, message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+                        <div class="mb-4">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Password
+                            </label>
+                            <div class="input-group">
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="password" 
+                                       name="password" 
+                                       placeholder="Enter your password"
+                                       required>
+                                <button class="btn btn-outline-secondary" 
+                                        type="button" 
+                                        id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
 
-    <form method="POST" action="{{ url_for('login') }}">
-        <p>
-            <label for="username">Username or Email:</label><br> {# Label changed back to Username or Email #}
-            <input type="text" id="username" name="username" required>
-        </p>
-        <p>
-            <label for="password">Password:</label><br>
-            <input type="password" id="password" name="password" required>
-        </p>
-        <p>
-            <button type="submit">Login</button>
-        </p>
-    </form>
-    <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a>.</p>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center bg-light">
+                    <p class="mb-0">
+                        Don't have an account? 
+                        <a href="{{ url_for('register') }}" class="text-decoration-none fw-bold">
+                            <i class="fas fa-user-plus me-1"></i>Sign up here
+                        </a>
+                    </p>
+                    <small class="form-text text-muted mt-2">
+                        For new accounts, remember to check the username, password, and date of birth requirements on the registration page.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('togglePassword').addEventListener('click', function () {
+    const password = document.getElementById('password');
+    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+    password.setAttribute('type', type);
+    
+    // Toggle the eye icon
+    const icon = this.querySelector('i');
+    icon.classList.toggle('fa-eye');
+    icon.classList.toggle('fa-eye-slash');
+});
+
+// Add some interactive feedback
+document.querySelector('form').addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<span class="loading me-2"></span>Logging in...';
+    submitBtn.disabled = true;
+    
+    // Re-enable if there's an error (form doesn't actually submit)
+    setTimeout(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }, 3000);
+});
+</script>
 {% endblock %}
