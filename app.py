@@ -97,7 +97,11 @@ def calculate_age(dob_str):
     except ValueError:
         return None # Invalid date format
 
+<<<<<<< HEAD
 # Function to check password strength
+=======
+# Function to check password strength (new)
+>>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
 def is_strong_password(password):
     """
     Checks if a password meets complexity requirements:
@@ -119,7 +123,11 @@ def is_strong_password(password):
         return False
     return True
 
+<<<<<<< HEAD
 # Function to validate username
+=======
+# Function to validate username (new)
+>>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
 def is_valid_username(username):
     """
     Checks if a username contains only alphanumeric characters and underscores.
@@ -132,6 +140,14 @@ def is_valid_username(username):
         return False
     return True
 
+<<<<<<< HEAD
+=======
+# --- SQL Query Definitions for Popular_Games.db ---
+# Note: The original query assumes `game_platforms` links to 8 platform_id columns.
+# This is an unusual schema. If `game_platforms` has a game_id and a single platform_id
+# column for a many-to-many relationship, this query needs adjustment.
+# I'm keeping it as is based on your provided original.
+>>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
 GAME_SELECT = """
 SELECT
     g.game_id,
@@ -219,7 +235,11 @@ def register():
             flash('All fields are required!', 'danger')
             return redirect(url_for('register'))
 
+<<<<<<< HEAD
         #Username validation
+=======
+        # Refinement: Username validation
+>>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
         if not is_valid_username(username):
             flash('Username must be 3-20 characters long and contain only letters, numbers, and underscores.', 'danger')
             return redirect(url_for('register'))
@@ -228,7 +248,11 @@ def register():
             flash('Please enter a valid email address.', 'danger')
             return redirect(url_for('register'))
 
+<<<<<<< HEAD
         #Password complexity validation
+=======
+        # Refinement: Password complexity validation
+>>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
         if not is_strong_password(password):
             flash('Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.', 'danger')
             return redirect(url_for('register'))
@@ -357,6 +381,7 @@ def profile():
     today_date_str = date.today().strftime('%Y-%m-%d')
 
     return render_template('profile.html', user=user, today_date_str=today_date_str)
+<<<<<<< HEAD
 
 @app.route('/update_username', methods=['POST'])
 def update_username():
@@ -404,6 +429,8 @@ def update_username():
         flash(f'An unexpected error occurred while updating username: {e}', 'danger')
     
     return redirect(url_for('profile'))
+=======
+>>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
 
 @app.route('/change_password', methods=['POST'])
 def change_password():
@@ -440,7 +467,11 @@ def change_password():
         flash('New passwords do not match.', 'error')
         return redirect(url_for('profile'))
     
+<<<<<<< HEAD
     # Password strength validation for change password
+=======
+    # Refinement: Password complexity validation for change password
+>>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
     if not is_strong_password(new_password):
         flash('New password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.', 'danger')
         return redirect(url_for('profile'))
