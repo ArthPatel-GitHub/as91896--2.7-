@@ -30,6 +30,23 @@
                 </div>
             </div>
 
+            <!-- New card for Change Username -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-user-edit"></i> Change Username
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('update_username') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="new_username" class="form-label">New Username</label>
+                            <input type="text" class="form-control" id="new_username" name="new_username" required>
+                            <small class="form-text text-muted">Username must be 3-20 characters long and contain only letters, numbers, and underscores.</small>
+                        </div>
+                        <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Update Username</button>
+                    </form>
+                </div>
+            </div>
+
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-info text-white">
                     <i class="fas fa-calendar-alt"></i> Update Date of Birth
@@ -38,8 +55,9 @@
                     <form action="{{ url_for('update_dob') }}" method="POST">
                         <div class="mb-3">
                             <label for="dob" class="form-label">New Date of Birth</label>
-                            <input type="date" class="form-control" id="dob" name="dob" value="{{ user.dob }}" required>
-                            <small class="form-text text-muted">Format: YYYY-MM-DD</small>
+                            <input type="date" class="form-control" id="dob" name="dob" value="{{ user.dob }}"
+                                   min="1925-01-01" max="{{ today_date_str }}" required>
+                            <small class="form-text text-muted">Date of birth must be between 1925-01-01 and today's date. (Minimum age: 13)</small>
                         </div>
                         <button type="submit" class="btn btn-info"><i class="fas fa-edit"></i> Update DOB</button>
                     </form>
@@ -59,7 +77,7 @@
                         <div class="mb-3">
                             <label for="new_password" class="form-label">New Password</label>
                             <input type="password" class="form-control" id="new_password" name="new_password" required>
-                            <small class="form-text text-muted">Minimum 6 characters</small>
+                            <small class="form-text text-muted">Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.</small>
                         </div>
                         <div class="mb-3">
                             <label for="confirm_new_password" class="form-label">Confirm New Password</label>

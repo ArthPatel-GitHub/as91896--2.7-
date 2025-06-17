@@ -9,7 +9,7 @@ import re # This is the library used for regular expressions
 
 # --- Flask Application Setup ---
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'a_very_long_and_random_secret_key_for_production_use' # CHANGE THIS IN PRODUCTION!
+app.config['SECRET_KEY'] = 'a_very_long_and_random_secret_key_for_production_use'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///user_information.db' # SQLAlchemy will manage this database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -24,7 +24,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
-    dob = db.Column(db.String(10), nullable=True) # YYYY-MM-DD string
+    dob = db.Column(db.String(10), nullable=True) # ISO-MM-DD string
 
     user_games_entries = db.relationship('UserGame', backref='user', lazy=True, cascade="all, delete-orphan")
 
@@ -97,7 +97,7 @@ def calculate_age(dob_str):
     except ValueError:
         return None # Invalid date format
 
-# Function to check password strength (new)
+# Function to check password strength
 def is_strong_password(password):
     """
     Checks if a password meets complexity requirements:
@@ -119,7 +119,7 @@ def is_strong_password(password):
         return False
     return True
 
-# Function to validate username (new)
+# Function to validate username
 def is_valid_username(username):
     """
     Checks if a username contains only alphanumeric characters and underscores.
@@ -132,11 +132,6 @@ def is_valid_username(username):
         return False
     return True
 
-# --- SQL Query Definitions for Popular_Games.db ---
-# Note: The original query assumes `game_platforms` links to 8 platform_id columns.
-# This is an unusual schema. If `game_platforms` has a game_id and a single platform_id
-# column for a many-to-many relationship, this query needs adjustment.
-# I'm keeping it as is based on your provided original.
 GAME_SELECT = """
 SELECT
     g.game_id,
@@ -224,7 +219,7 @@ def register():
             flash('All fields are required!', 'danger')
             return redirect(url_for('register'))
 
-        # Refinement: Username validation
+        #Username validation
         if not is_valid_username(username):
             flash('Username must be 3-20 characters long and contain only letters, numbers, and underscores.', 'danger')
             return redirect(url_for('register'))
@@ -233,7 +228,7 @@ def register():
             flash('Please enter a valid email address.', 'danger')
             return redirect(url_for('register'))
 
-        # Refinement: Password complexity validation
+        #Password complexity validation
         if not is_strong_password(password):
             flash('Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.', 'danger')
             return redirect(url_for('register'))
@@ -363,6 +358,53 @@ def profile():
 
     return render_template('profile.html', user=user, today_date_str=today_date_str)
 
+@app.route('/update_username', methods=['POST'])
+def update_username():
+    """
+    Handles updating the user's username.
+    """
+    if 'user_id' not in session:
+        flash('Please log in to update your username.', 'info')
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+    if not user:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
+
+    new_username = request.form.get('new_username', '').strip()
+
+    if not new_username:
+        flash('New username cannot be empty.', 'danger')
+        return redirect(url_for('profile'))
+    
+    if new_username == user.username:
+        flash('New username is the same as your current username.', 'info')
+        return redirect(url_for('profile'))
+
+    # Validate new username format
+    if not is_valid_username(new_username):
+        flash('New username must be 3-20 characters long and contain only letters, numbers, and underscores.', 'danger')
+        return redirect(url_for('profile'))
+
+    # Check if new username is already taken by another user
+    existing_user_with_new_username = User.query.filter(User.username == new_username).first()
+    if existing_user_with_new_username and existing_user_with_new_username.id != user.id:
+        flash('This username is already taken. Please choose a different one.', 'danger')
+        return redirect(url_for('profile'))
+
+    try:
+        user.username = new_username
+        db.session.commit()
+        session['username'] = new_username # Update session username immediately
+        flash('Username updated successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        print(f"Database error updating username: {e}")
+        flash(f'An unexpected error occurred while updating username: {e}', 'danger')
+    
+    return redirect(url_for('profile'))
+
 @app.route('/change_password', methods=['POST'])
 def change_password():
     """
@@ -398,7 +440,7 @@ def change_password():
         flash('New passwords do not match.', 'error')
         return redirect(url_for('profile'))
     
-    # Refinement: Password complexity validation for change password
+    # Password strength validation for change password
     if not is_strong_password(new_password):
         flash('New password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.', 'danger')
         return redirect(url_for('profile'))
