@@ -467,11 +467,10 @@ def change_password():
         flash('New passwords do not match.', 'error')
         return redirect(url_for('profile'))
     
-<<<<<<< HEAD
+
     # Password strength validation for change password
-=======
     # Refinement: Password complexity validation for change password
->>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
+
     if not is_strong_password(new_password):
         flash('New password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.', 'danger')
         return redirect(url_for('profile'))
