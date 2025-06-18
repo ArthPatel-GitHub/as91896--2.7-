@@ -8,14 +8,14 @@
             <div class="row">
                 <div class="col-md-4 text-center">
                     {% if game.cover_image %}
-                    <img src="{{ game.cover_image }}" class="img-fluid rounded shadow-sm" alt="{{ game.title }}" style="max-height: 400px; object-fit: contain;">
+                    <img src="{{ game.cover_image }}" class="img-fluid rounded shadow-sm game-cover-image" alt="{{ game.title }}">
                     {% else %}
-                    <img src="https://via.placeholder.com/300x400?text=No+Image" class="img-fluid rounded shadow-sm" alt="No image available" style="max-height: 400px; object-fit: contain;">
+                    <img src="https://via.placeholder.com/300x400?text=No+Image" class="img-fluid rounded shadow-sm game-cover-image" alt="No image available">
                     {% endif %}
                     <div class="mt-3">
-                        {% if game.image_url %}<img src="{{ game.image_url }}" class="img-thumbnail" style="width: 80px; height: 60px; object-fit: cover;">{% endif %}
-                        {% if game.image_url2 %}<img src="{{ game.image_url2 }}" class="img-thumbnail" style="width: 80px; height: 60px; object-fit: cover;">{% endif %}
-                        {% if game.image_url3 %}<img src="{{ game.image_url3 }}" class="img-thumbnail" style="width: 80px; height: 60px; object-fit: cover;">{% endif %}
+                        {% if game.image_url %}<img src="{{ game.image_url }}" class="img-thumbnail game-thumbnail-image" alt="Screenshot 1">{% endif %}
+                        {% if game.image_url2 %}<img src="{{ game.image_url2 }}" class="img-thumbnail game-thumbnail-image" alt="Screenshot 2">{% endif %}
+                        {% if game.image_url3 %}<img src="{{ game.image_url3 }}" class="img-thumbnail game-thumbnail-image" alt="Screenshot 3">{% endif %}
                     </div>
                 </div>
                 <div class="col-md-8">

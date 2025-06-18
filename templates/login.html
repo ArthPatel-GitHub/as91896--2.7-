@@ -15,17 +15,17 @@
                     <form method="POST" action="{{ url_for('login') }}">
                         <div class="mb-3">
                             <label for="username_or_email" class="form-label">
-                                <i class="fas fa-user me-2"></i>Username or Email
+                                <i class="fas fa-user me-2"></i>Username
                             </label>
                             <input type="text" 
                                    class="form-control" 
                                    id="username_or_email" 
                                    name="username_or_email" 
-                                   placeholder="Enter your username or email address"
+                                   placeholder="Enter your username"
                                    required>
                             <div class="form-text">
                                 <i class="fas fa-info-circle me-1"></i>
-                                You can use either your username or email address to log in.
+                                You can use your username to login.
                             </div>
                         </div>
 
@@ -55,14 +55,14 @@
                         </div>
                     </form>
                 </div>
-                <div class="card-footer text-center bg-light">
-                    <p class="mb-0">
+                <div class="card-footer text-center">
+                    <p class="mb-0 auth-link-text">
                         Don't have an account? 
-                        <a href="{{ url_for('register') }}" class="text-decoration-none fw-bold">
+                        <a href="{{ url_for('register') }}" class="text-decoration-none fw-bold auth-link-anchor">
                             <i class="fas fa-user-plus me-1"></i>Sign up here
                         </a>
                     </p>
-                    <small class="form-text text-muted mt-2">
+                    <small class="form-text text-muted mt-2 footer-small-text">
                         For new accounts, remember to check the username, password, and date of birth requirements on the registration page.
                     </small>
                 </div>
@@ -72,32 +72,4 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-document.getElementById('togglePassword').addEventListener('click', function () {
-    const password = document.getElementById('password');
-    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-    password.setAttribute('type', type);
-    
-    // Toggle the eye icon
-    const icon = this.querySelector('i');
-    icon.classList.toggle('fa-eye');
-    icon.classList.toggle('fa-eye-slash');
-});
-
-// Add some interactive feedback
-document.querySelector('form').addEventListener('submit', function(e) {
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    
-    submitBtn.innerHTML = '<span class="loading me-2"></span>Logging in...';
-    submitBtn.disabled = true;
-    
-    // Re-enable if there's an error (form doesn't actually submit)
-    setTimeout(() => {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-    }, 3000);
-});
-</script>
-{% endblock %}
+{% block extra_js %}{% endblock %}

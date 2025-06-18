@@ -32,8 +32,8 @@
             </div>
             <div>
                 <a href="{{ url_for('game_detail', game_id=game.game_id) }}" class="btn btn-primary">View</a>
-                <form method="POST" action="{{ url_for('remove_from_list', game_id=game.game_id) }}" style="display: inline;">
-                    <button type="submit" class="btn btn-danger" onclick="return confirm('Remove this game from your list?')">Remove</button>
+                <form method="POST" action="{{ url_for('remove_from_list', game_id=game.game_id) }}" class="inline-form-button">
+                    <button type="submit" class="btn btn-danger confirm-remove-game">Remove</button>
                 </form>
             </div>
         </div>
