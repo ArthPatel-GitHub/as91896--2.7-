@@ -47,22 +47,23 @@
                 </div>
             </div>
 
-            <div class="card shadow-sm mb-4">
                 <div class="card-header bg-info text-white">
-                    <i class="fas fa-calendar-alt"></i> Update Date of Birth
                 </div>
-                <div class="card-body">
-                    <form action="{{ url_for('update_dob') }}" method="POST">
-                        <div class="mb-3">
-                            <label for="dob" class="form-label">New Date of Birth</label>
-                            <input type="date" class="form-control" id="dob" name="dob" value="{{ user.dob }}"
-                                   min="1925-01-01" max="{{ today_date_str }}" required>
-                            <small class="form-text text-muted">Date of birth must be between 1925-01-01 and today's date. (Minimum age: 13)</small>
-                        </div>
-                        <button type="submit" class="btn btn-info"><i class="fas fa-edit"></i> Update DOB</button>
-                    </form>
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <i class="fas fa-envelope"></i> Change Email Address
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ url_for('update_email') }}" method="POST">
+                            <div class="mb-3">
+                                <label for="new_email" class="form-label">New Email Address</label>
+                                <input type="email" class="form-control" id="new_email" name="new_email" required>
+                                <small class="form-text text-muted">Please enter a valid email address (e.g., example@domain.com).</small>
+                            </div>
+                            <button type="submit" class="btn btn-info"><i class="fas fa-envelope"></i> Update Email</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
 
             <div class="card shadow-sm">
                 <div class="card-header bg-warning text-dark">
