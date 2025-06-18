@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}My Game Site{% endblock %}</title>
     
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap CSS - Keeping this here, it's a core framework link! -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome Icons -->
+    <!-- Font Awesome Icons - Gotta have my cool icons! -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
+    <!-- Custom CSS - My own special styles! -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navigation -->
+    <!-- Navigation - My top bar, always visible! -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <!-- Left side - Brand and main navigation -->
@@ -85,7 +85,7 @@
         </div>
     </nav>
 
-    <!-- Flash Messages -->
+    <!-- Flash Messages - For showing my alerts and notifications! -->
     <div class="container mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -108,12 +108,12 @@
         {% endwith %}
     </div>
 
-    <!-- Main Content -->
+    <!-- Main Content - Where all my page stuff goes! -->
     <main class="main-content">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
+    <!-- Footer - My website's bottom section! -->
     <footer class="footer">
         <div class="container">
             <div class="row">
@@ -127,8 +127,10 @@
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
+    <!-- Bootstrap JS - Keeping this for Bootstrap functionality! -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- My Main JavaScript - All my custom scripts are linked here now! -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     
     {% block extra_js %}{% endblock %}
 </body>

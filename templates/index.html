@@ -9,9 +9,9 @@
         <div class="col">
             <div class="card h-100 shadow-sm">
                 {% if game.cover_image %}
-                <img src="{{ game.cover_image }}" class="card-img-top" alt="{{ game.title }}" style="height: 200px; object-fit: cover;">
+                <img src="{{ game.cover_image }}" class="card-img-top home-card-image" alt="{{ game.title }}">
                 {% else %}
-                <img src="https://via.placeholder.com/200x200?text=No+Image" class="card-img-top" alt="No image available" style="height: 200px; object-fit: cover;">
+                <img src="https://via.placeholder.com/200x200?text=No+Image" class="card-img-top home-card-image" alt="No image available">
                 {% endif %}
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">{{ game.title }}</h5>

@@ -1,9 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
   console.log("My JavaScript is loaded!"); // My JavaScript is loaded!
 
-  // Removed slider functionality since it is no longer needed.
-
   // Initialize flatpickr for release date inputs if needed
+  // This part is for any date pickers, if I ever add them!
   const releaseDateMinInput = document.getElementById("release-date-min");
   if (releaseDateMinInput) {
     flatpickr(releaseDateMinInput, {
@@ -28,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Checking if the element exists on the page
     togglePassword.addEventListener("click", function () {
       const passwordInput = document.getElementById("password");
+      // Changing the input type between password and text
       const type =
         passwordInput.getAttribute("type") === "password" ? "text" : "password";
       passwordInput.setAttribute("type", type);
@@ -54,11 +54,11 @@ document.addEventListener("DOMContentLoaded", function () {
       setTimeout(() => {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
-      }, 2000); // My chosen delay!
+      }, 3000); // My chosen delay!
     });
   }
 
-  // --- My JavaScript for the Register Page! ---
+  // --- My JavaScript for the Register Page ---
   const dobInput = document.getElementById("dob");
   if (dobInput) {
     // Checking if the DOB input exists on the page
@@ -71,5 +71,74 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Setting the max attribute for the dob input to today's date
     dobInput.setAttribute("max", todayDateFormatted);
+  }
+
+  // --- My JavaScript for confirming game removal from the list! ---
+  // Adding event listeners to all "Remove" buttons on the "My Games" page
+  document.querySelectorAll(".confirm-remove-game").forEach((button) => {
+    button.addEventListener("click", function (event) {
+      // This will prevent the form from submitting right away
+      event.preventDefault();
+      // Using a custom confirmation message instead of `window.confirm`
+      showCustomConfirm(
+        "Are you sure you want to remove this game from your list?",
+        () => {
+          // If the user confirms, then I'll submit the form
+          this.closest("form").submit();
+        }
+      );
+    });
+  });
+
+  // --- Custom Confirmation Modal Logic ---
+  // A simple function to create and show a custom confirmation dialog
+  function showCustomConfirm(message, callback) {
+    // Create the modal HTML elements
+    const modalHtml = `
+      <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-labelledby="customConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+              <h5 class="modal-title" id="customConfirmModalLabel">Confirm Action</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              ${message}
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-danger" id="confirmActionButton">Confirm</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Add the modal HTML to the body
+    document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+    // Get the modal element and create a Bootstrap modal instance
+    const customConfirmModal = new bootstrap.Modal(
+      document.getElementById("customConfirmModal")
+    );
+
+    // Set up the click handler for the confirm button
+    const confirmButton = document.getElementById("confirmActionButton");
+    confirmButton.onclick = () => {
+      // Execute the callback function if confirmed
+      callback();
+      // Close the modal after action
+      customConfirmModal.hide();
+      // Remove the modal from the DOM after it's hidden to keep things clean
+      customConfirmModal._element.addEventListener(
+        "hidden.bs.modal",
+        function () {
+          customConfirmModal._element.remove();
+        }
+      );
+    };
+
+    // Show the modal
+    customConfirmModal.show();
   }
 });

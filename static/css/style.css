@@ -1,670 +1,223 @@
-/* CSS Variables for consistent theming */
+/* CSS Variables for consistent theming - These are my custom colors, now with MAXIMUM contrast! */
 :root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --accent-color: #e74c3c;
-    --success-color: #27ae60;
-    --warning-color: #f39c12;
-    --dark-bg: #1a1a1a;
-    --card-bg: #2d3748;
-    --text-light: #ecf0f1;
-    --text-dark: #2c3e50;
+    --primary-color: #2c3e50; /* Still a solid dark blue for main elements, it helps with borders */
+    --secondary-color: #3498db; /* MY BLUE LINKS! They're gonna stay bright blue! */
+    --accent-color: #e74c3c; /* Red for warnings/accents, still super strong */
+    --success-color: #27ae60; /* Green for success messages */
+    --warning-color: #f39c12; /* Orange for warnings */
+
+    /* These are the core for pure black and bright white! */
+    --dark-bg: #000000; /* BOOM! Pure black background for EVERYTHING, just like you wanted! */
+    --card-bg: #1a1a1a; /* A very dark grey for cards, just enough to make them pop off the pure black */
+    --text-light: #ffffff; /* ALL text is bright white now, no exceptions! */
+    --text-dark: #ffffff; /* Headings and text on colored backgrounds are also white, for maximum pop! */
+    --faded-text: #ffffff; /* Now all "faded" text is also pure white for max readability! */
+
+    --border-color: rgba(255, 255, 255, 0.1); /* Subtle borders for separation, barely there but effective */
 }
 
-/* Base Styles */
+/* Base Styles - My general page styles, now solid black! */
 body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: var(--dark-bg); /* Setting the whole page to pure black, just like you said! */
     min-height: 100vh;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
+    display: flex; /* Using flexbox for layout, keeps things neat */
+    flex-direction: column; /* Stacking content vertically */
+    color: var(--text-light) !important; /* Default text color is white, nice and bright! */
 }
 
-/* Navigation Styles */
+/* General rule for all <small> tags to be white, just in case! */
+small {
+    color: white !important; /* Making sure ALL small text is white, literally every text! */
+}
+
+/* SUPER IMPORTANT: Ensuring all Bootstrap's 'text-muted' is also white! */
+.text-muted {
+    color: white !important; /* This should finally force ALL muted text to white! */
+}
+
+
+/* Navigation Styles - My cool navigation bar, now truly integrated with the new dark look! */
 .navbar {
-    background: rgba(44, 62, 80, 0.95) !important;
-    backdrop-filter: blur(10px);
-    border-bottom: 2px solid rgba(52, 152, 219, 0.3);
+    background: var(--card-bg) !important; /* Using the card background for the navbar, super dark! */
+    backdrop-filter: blur(10px); /* Keeps that cool blur effect */
+    border-bottom: 2px solid var(--secondary-color); /* Stronger blue border for nav, makes it stand out! */
     padding: 1rem 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* More prominent shadow for that extra pop */
 }
 
 .navbar-brand {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: var(--secondary-color) !important;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    transition: all 0.3s ease;
-}
-
-.navbar-brand:hover {
-    color: #5dade2 !important;
-    transform: scale(1.05);
-}
-
-.navbar-nav .nav-link {
-    color: var(--text-light) !important;
-    font-weight: 500;
-    margin: 0 0.5rem;
-    transition: all 0.3s ease;
-    border-radius: 8px;
-    padding: 0.5rem 1rem !important;
-    position: relative;
-}
-
-.navbar-nav .nav-link:hover {
-    background: rgba(52, 152, 219, 0.2);
-    transform: translateY(-2px);
-    color: var(--secondary-color) !important;
-}
-
-.navbar-nav .nav-link::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: 0;
-    left: 50%;
-    background-color: var(--secondary-color);
-    transition: all 0.3s ease;
-}
-
-.navbar-nav .nav-link:hover::after {
-    width: 80%;
-    left: 10%;
-}
-
-/* Button Styles */
-.btn-primary {
-    background: linear-gradient(45deg, var(--secondary-color), #2980b9);
-    border: none;
-    border-radius: 8px;
-    padding: 0.75rem 1.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
-    background: linear-gradient(45deg, #2980b9, var(--secondary-color));
-}
-
-.btn-outline-primary {
-    border: 2px solid var(--secondary-color);
-    color: var(--secondary-color);
-    background: transparent;
-    border-radius: 8px;
-    padding: 0.75rem 1.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.btn-outline-primary:hover {
-    background: var(--secondary-color);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-}
-
-.btn-danger {
-    background: linear-gradient(45deg, var(--accent-color), #c0392b);
-    border: none;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.btn-danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
-}
-
-.btn-success {
-    background: linear-gradient(45deg, var(--success-color), #229954);
-    border: none;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.btn-success:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-}
-
-/* Card Styles */
-.card {
-    background: rgba(255, 255, 255, 0.95);
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-    overflow: hidden;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-}
-
-.card-header {
-    background: linear-gradient(45deg, var(--primary-color), #34495e);
-    color: white;
-    border: none;
-    padding: 1.5rem;
-    font-weight: bold;
-    font-size: 1.2rem;
-}
-
-.card-body {
-    padding: 2rem;
-}
-
-/* Game Card Specific Styles */
-.game-card {
-    margin-bottom: 2rem;
-    height: 100%;
-}
-
-.game-card .card-img-top {
-    height: 200px;
-    object-fit: cover;
-    transition: all 0.3s ease;
-}
-
-.game-card:hover .card-img-top {
-    transform: scale(1.05);
-}
-
-.game-card .card-title {
-    color: var(--primary-color);
-    font-weight: bold;
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
-}
-
-.game-card .card-text {
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.game-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
-}
-
-.score-badge {
-    background: linear-gradient(45deg, var(--success-color), #229954);
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: 0.8rem;
-}
-
-.platform-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    margin-top: 0.5rem;
-}
-
-.platform-tag {
-    background: var(--secondary-color);
-    color: white;
-    padding: 0.2rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    font-weight: 500;
-}
-
-/* Form Styles */
-.form-control {
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    transition: all 0.3s ease;
-    font-size: 1rem;
-}
-
-.form-control:focus {
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-    transform: translateY(-1px);
-}
-
-.form-label {
-    font-weight: 600;
-    color: var(--text-dark);
-    margin-bottom: 0.5rem;
-}
-
-.form-check-input:checked {
-    background-color: var(--secondary-color);
-    border-color: var(--secondary-color);
-}
-
-/* Alert Styles */
-.alert {
-    border: none;
-    border-radius: 8px;
-    padding: 1rem 1.5rem;
-    font-weight: 500;
-    margin-bottom: 1.5rem;
-}
-
-.alert-success {
-    background: linear-gradient(45deg, rgba(39, 174, 96, 0.1), rgba(46, 204, 113, 0.1));
-    border-left: 4px solid var(--success-color);
-    color: #155724;
-}
-
-.alert-danger {
-    background: linear-gradient(45deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
-    border-left: 4px solid var(--accent-color);
-    color: #721c24;
-}
-
-.alert-warning {
-    background: linear-gradient(45deg, rgba(243, 156, 18, 0.1), rgba(230, 126, 34, 0.1));
-    border-left: 4px solid var(--warning-color);
-    color: #856404;
-}
-
-.alert-info {
-    background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(41, 128, 185, 0.1));
-    border-left: 4px solid var(--secondary-color);
-    color: #0c5460;
-}
-
-/* Main Content */
-.main-content {
-    padding: 2rem 0;
-    min-height: calc(100vh - 200px);
-}
-
-.page-title {
-    color: white;
-    font-size: 2.5rem;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 2rem;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
-
-/* Search Form Styles */
-.search-container {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 15px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.search-section {
-    margin-bottom: 1.5rem;
-    padding: 1.5rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    background: #f8f9fa;
-}
-
-.search-section h5 {
-    color: var(--primary-color);
-    font-weight: bold;
-    margin-bottom: 1rem;
-}
-
-/* My Games Grid Layout */
-.games-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem;
-    padding: 1rem 0;
-}
-
-/* For 4x5 layout on larger screens */
-@media (min-width: 1200px) {
-    .games-grid {
-        grid-template-columns: repeat(4, 1fr);
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-}
-
-@media (min-width: 992px) and (max-width: 1199px) {
-    .games-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-    .games-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 767px) {
-    .games-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .navbar-brand {
-        font-size: 1.4rem;
-    }
-    
-    .page-title {
-        font-size: 2rem;
-    }
-}
-
-/* Footer Styles */
-.footer {
-    background: rgba(44, 62, 80, 0.95);
-    color: var(--text-light);
-    padding: 2rem 0;
-    margin-top: 3rem;
-    text-align: center;
-    backdrop-filter: blur(10px);
-}
-
-/* Loading Animation */
-.loading {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255,255,255,.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--secondary-color);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #2980b9;
-}
-
-/* Utility Classes */
-.text-gradient {
-    background: linear-gradient(45deg, var(--secondary-color), #5dade2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.shadow-soft {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.border-gradient {
-    border: 2px solid;
-    border-image: linear-gradient(45deg, var(--secondary-color), #5dade2) 1;
-}
-
-/* Animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
-}
-
-/* Profile Page Specific Styles */
-.profile-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%);
-    border-radius: 20px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-}
-
-.profile-header {
-    text-align: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.profile-avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: linear-gradient(45deg, var(--secondary-color), #5dade2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    font-size: 2rem;
-    color: white;
-    font-weight: bold;
-}
-
-/* Game Detail Page */
-.game-detail-hero {
-    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6));
-    border-radius: 15px;
-    padding: 3rem 2rem;
-    margin-bottom: 2rem;
-    color: white;
-    position: relative;
-    overflow: hidden;
-}
-
-.game-detail-hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-    opacity: 0.3;
-    z-index: -1;
-}
-
-.game-screenshots {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin: 2rem 0;
-}
-
-.game-screenshots img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.game-screenshots img:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-}
-/* CSS Variables for consistent theming - These are my custom colors! */
-:root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --accent-color: #e74c3c;
-    --success-color: #27ae60;
-    --warning-color: #f39c12;
-    --dark-bg: #1a1a1a;
-    --card-bg: #2d3748;
-    --text-light: #ecf0f1;
-    --text-dark: #2c3e50;
-}
-
-/* Base Styles - My general page styles! */
-body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-}
-
-/* Navigation Styles - My cool navigation bar! */
-.navbar {
-    background: rgba(44, 62, 80, 0.95) !important;
-    backdrop-filter: blur(10px);
-    border-bottom: 2px solid rgba(52, 152, 219, 0.3);
-    padding: 1rem 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.navbar-brand {
+    color: var(--text-dark) !important; /* My brand text is bright white, easy to see! */
     font-weight: 700;
     font-size: 1.5rem;
-    color: var(--text-light) !important;
-    transition: color 0.3s ease;
-}
-
-.navbar-brand:hover {
-    color: var(--secondary-color) !important;
-}
-
-.navbar-nav .nav-link {
-    color: var(--text-light) !important;
-    font-weight: 500;
-    margin-right: 15px;
-    transition: color 0.3s ease, transform 0.2s ease;
     display: flex;
     align-items: center;
 }
 
-.navbar-nav .nav-link:hover {
-    color: var(--secondary-color) !important;
-    transform: translateY(-2px);
+.navbar-nav .nav-link {
+    color: var(--text-light) !important; /* Nav links are white, clear as day! */
+    transition: color 0.3s ease;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: var(--secondary-color) !important; /* Hover effect with primary blue, keeps links BLUE! */
+    background-color: rgba(52, 152, 219, 0.1); /* Subtle background on hover */
 }
 
 .navbar-toggler {
-    border-color: rgba(255, 255, 255, 0.3) !important;
+    border-color: var(--secondary-color); /* Toggler border is blue, easy to spot */
 }
 
 .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.5%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"); /* Icon is still a clear white */
 }
 
+/* Dropdown adjustments for the dark theme */
 .dropdown-menu {
-    background-color: var(--dark-bg);
-    border: none;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    background-color: var(--card-bg); /* Dropdowns are dark grey, stands out from black */
+    border: 1px solid var(--border-color);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
 }
 
 .dropdown-item {
-    color: var(--text-light) !important;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    color: var(--text-light) !important; /* Dropdown text is white */
 }
 
 .dropdown-item:hover {
-    background-color: var(--secondary-color);
-    color: white !important;
+    background-color: var(--secondary-color); /* Blue hover, text stays white for clarity! */
+    color: var(--text-dark) !important;
 }
 
 .dropdown-divider {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--border-color); /* Subtle divider */
 }
 
-/* Main Content Area */
+/* Alerts - General styling for flashed messages, now with STRONG contrast! */
+.alert {
+    border: none;
+    color: var(--text-dark) !important; /* Alert text is white, always readable! */
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.25rem;
+}
+
+.alert-success {
+    background-color: var(--success-color); /* Green alert, solid color for best contrast */
+}
+
+.alert-info {
+    background-color: var(--secondary-color); /* Blue alert, solid color */
+}
+
+.alert-warning {
+    background-color: var(--warning-color); /* Orange alert, solid color */
+}
+
+.alert-danger, .alert-error {
+    background-color: var(--accent-color); /* Red alert, solid color */
+}
+
+.alert .btn-close {
+    color: var(--text-dark) !important; /* Close button is white, clear on any alert background */
+    opacity: 0.8;
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    margin-left: auto;
+}
+
+.alert .btn-close:hover {
+    opacity: 1;
+}
+
+/* Main Content Area - Everything here gets white text! */
 .main-content {
-    flex: 1;
-    padding: 2rem 0;
+    flex-grow: 1; /* Allows main content to take up available space */
+    padding: 2rem 0; /* Some padding top and bottom */
+    min-height: calc(100vh - 180px); /* Adjusting minimum height based on navbar/footer */
+    color: var(--text-light) !important; /* Default content text is white, always! */
 }
 
-/* Footer Styles - My website's bottom! */
+/* Footer Styles - My website's bottom section, dark and clear! */
 .footer {
-    background: var(--dark-bg);
-    color: var(--text-light);
-    padding: 1.5rem 0;
-    border-top: 2px solid rgba(52, 152, 219, 0.3);
+    background: var(--card-bg); /* Footer is dark grey too */
+    color: var(--text-light) !important; /* Footer text is white! */
+    padding: 2rem 0; /* More padding for a comfy footer */
+    margin-top: 3rem; /* Space from content */
     text-align: center;
+    backdrop-filter: blur(10px); /* Cool blur effect! */
 }
 
 .footer p {
-    margin-bottom: 0;
+    margin-bottom: 0; /* No extra space below the text */
 }
 
-/* Card Styles - For my content boxes! */
+/* Card Styles - For my content boxes, they look sharp and clear! */
 .card {
-    background-color: var(--card-bg);
-    color: var(--text-light);
+    background-color: var(--card-bg); /* Cards are dark grey */
+    color: var(--text-light) !important; /* Card text is white! */
     border-radius: 10px;
     border: none;
     overflow: hidden;
+    transition: all 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.card:hover {
+    transform: translateY(-5px); /* A slight lift on hover */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Nicer shadow */
 }
 
 .card-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color); /* Subtle border for header */
     font-weight: bold;
+    background-color: var(--primary-color); /* Darker blue header */
+    color: var(--text-dark) !important; /* Header text is white! */
 }
 
 .card-body p {
-    color: var(--text-light);
+    color: var(--text-light) !important; /* Text inside cards is white! */
 }
 
-/* Form Styles - For all my input forms! */
+/* Form Styles - For all my input forms, now with GREAT contrast! */
 .form-label {
-    color: var(--text-light);
+    color: var(--text-light) !important; /* Labels are white, easy to read! */
     font-weight: 500;
 }
 
 .form-control, .form-select {
-    background-color: #3d495a;
-    color: var(--text-light);
-    border: 1px solid #5a6b83;
+    background-color: #252525; /* Darker input fields */
+    color: var(--text-light) !important; /* Input text is white! */
+    border: 1px solid #5a6b83; /* A bit more defined border */
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .form-control:focus, .form-select:focus {
-    background-color: #3d495a;
-    color: var(--text-light);
-    border-color: var(--secondary-color);
+    background-color: #2b2b2b; /* Keep background dark on focus */
+    color: var(--text-light) !important; /* Text stays white on focus! */
+    border-color: var(--secondary-color); /* Highlight border with blue on focus */
     box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
 }
 
 .form-control::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.5) !important; /* Lighter placeholder text, still white based */
 }
 
+/* Making sure small text in forms is readable */
 .form-text {
-    color: rgba(255, 255, 255, 0.7) !important;
+    color: var(--faded-text) !important; /* Using my faded white for readability! */
 }
 
-/* Button Styles - My custom buttons! */
+/* Button Styles - My custom buttons, sharp and clear with white text! */
 .btn {
     font-weight: bold;
     border-radius: 5px;
@@ -672,23 +225,25 @@ body {
 }
 
 .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px); /* Lift on hover */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Shadow on hover */
 }
 
 .btn-primary {
-    background-color: var(--secondary-color);
+    background-color: var(--secondary-color); /* Blue button */
     border-color: var(--secondary-color);
+    color: var(--text-dark) !important; /* Button text is white! */
 }
 
 .btn-primary:hover {
-    background-color: #2980b9;
+    background-color: #2980b9; /* Darker blue on hover */
     border-color: #2980b9;
 }
 
 .btn-success {
-    background-color: var(--success-color);
+    background-color: var(--success-color); /* Green button */
     border-color: var(--success-color);
+    color: var(--text-dark) !important; /* Button text is white! */
 }
 
 .btn-success:hover {
@@ -697,8 +252,9 @@ body {
 }
 
 .btn-danger {
-    background-color: var(--accent-color);
+    background-color: var(--accent-color); /* Red button */
     border-color: var(--accent-color);
+    color: var(--text-dark) !important; /* Button text is white! */
 }
 
 .btn-danger:hover {
@@ -707,9 +263,9 @@ body {
 }
 
 .btn-warning {
-    background-color: var(--warning-color);
+    background-color: var(--warning-color); /* Orange button */
     border-color: var(--warning-color);
-    color: var(--dark-bg); /* Ensure dark text on warning */
+    color: var(--dark-bg) !important; /* Dark text on warning for ultimate contrast! */
 }
 
 .btn-warning:hover {
@@ -718,8 +274,9 @@ body {
 }
 
 .btn-info {
-    background-color: #34ace0; /* A slightly different info color */
+    background-color: #34ace0; /* Light blue button */
     border-color: #34ace0;
+    color: var(--text-dark) !important; /* Button text is white! */
 }
 
 .btn-info:hover {
@@ -728,8 +285,9 @@ body {
 }
 
 .btn-secondary {
-    background-color: #7f8c8d;
+    background-color: #7f8c8d; /* Grey button */
     border-color: #7f8c8d;
+    color: var(--text-dark) !important; /* Button text is white! */
 }
 
 .btn-secondary:hover {
@@ -738,8 +296,9 @@ body {
 }
 
 .btn-dark {
-    background-color: var(--dark-bg);
+    background-color: var(--dark-bg); /* Pure black button */
     border-color: var(--dark-bg);
+    color: var(--text-dark) !important; /* Button text is white! */
 }
 
 .btn-dark:hover {
@@ -747,37 +306,36 @@ body {
     border-color: #0d0d0d;
 }
 
-/* Alert Styles - My alert messages! */
+
+/* Alert Styles - My alert messages, now with max contrast! */
 .alert {
     border: none;
     border-radius: 8px;
     padding: 1rem 1.5rem;
     font-weight: 500;
     margin-bottom: 1.5rem;
+    color: var(--text-dark) !important; /* Alert text is white! */
 }
 
 .alert-success {
-    background: linear-gradient(45deg, rgba(39, 174, 96, 0.1), rgba(46, 204, 113, 0.1));
+    background: var(--success-color) !important; /* Solid background for best contrast */
     border-left: 4px solid var(--success-color);
-    color: #155724;
 }
 
 .alert-danger {
-    background: linear-gradient(45deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
+    background: var(--accent-color) !important; /* Solid background */
     border-left: 4px solid var(--accent-color);
-    color: #721c24;
 }
 
 .alert-warning {
-    background: linear-gradient(45deg, rgba(243, 156, 18, 0.1), rgba(230, 126, 34, 0.1));
+    background: var(--warning-color) !important; /* Solid background */
     border-left: 4px solid var(--warning-color);
-    color: #856404;
+    color: var(--dark-bg) !important; /* Dark text on warning for good contrast! */
 }
 
 .alert-info {
-    background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(41, 128, 185, 0.1));
+    background: var(--secondary-color) !important; /* Solid background */
     border-left: 4px solid var(--secondary-color);
-    color: #0c5460;
 }
 
 /* Specific styles for search filters */
@@ -785,7 +343,7 @@ body {
     padding: 20px;
 }
 
-/* Animations */
+/* Animations - Adding some cool fade and slide effects! */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -829,7 +387,7 @@ body {
     animation: slideUp 0.5s ease-out;
 }
 
-/* Loading spinner for buttons */
+/* Loading spinner for buttons - Looks good when something is loading! */
 .loading {
     display: inline-block;
     width: 1em;
@@ -849,33 +407,33 @@ body {
     }
 }
 
-/* Custom shadow for cards */
+/* Custom shadow for cards - A nice subtle shadow! */
 .shadow-soft {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
 }
 
-/* Profile specific styles */
+/* Profile specific styles - For my profile page elements! */
 .profile-avatar {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: linear-gradient(45deg, var(--secondary-color), #5dade2);
+    background: var(--secondary-color); /* Blue background for avatar, makes it pop! */
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 1rem;
     font-size: 2rem;
-    color: white;
+    color: white; /* White text on avatar */
     font-weight: bold;
 }
 
 /* Game Detail Page - My new styles for game images! */
 .game-detail-hero {
-    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6));
+    background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)); /* Even darker gradient for the hero */
     border-radius: 15px;
     padding: 3rem 2rem;
     margin-bottom: 2rem;
-    color: white;
+    color: var(--text-light) !important; /* Text is white here! */
     position: relative;
     overflow: hidden;
 }
@@ -900,13 +458,15 @@ body {
 
 .game-detail-hero p {
     font-size: 1.1rem;
-    opacity: 0.9;
+    color: var(--text-light) !important; /* Ensuring paragraph text is white */
+    opacity: 1 !important; /* Full opacity for maximum readability */
 }
 
 .game-detail-hero .badge {
     font-size: 1rem;
     padding: 0.5em 0.8em;
     margin-right: 0.5em;
+    color: var(--text-dark) !important; /* Badge text is white! */
 }
 
 .game-detail-hero .btn {
@@ -915,20 +475,20 @@ body {
 }
 
 .game-cover-image {
-    max-height: 400px;
-    object-fit: contain;
+    max-height: 400px; /* Max height for game cover */
+    object-fit: contain; /* Keeps the image aspect ratio */
 }
 
 .game-thumbnail-image {
-    width: 80px;
-    height: 60px;
-    object-fit: cover;
+    width: 80px; /* Small width for thumbnails */
+    height: 60px; /* Small height for thumbnails */
+    object-fit: cover; /* Fills the area */
 }
 
 .platforms .platform-badge {
     display: inline-block;
-    background-color: var(--primary-color);
-    color: var(--text-light);
+    background-color: var(--secondary-color); /* Platform badges are blue */
+    color: var(--text-dark) !important; /* Making sure text is white on these badges too! */
     padding: 0.3em 0.7em;
     border-radius: 5px;
     margin-right: 5px;
@@ -937,15 +497,15 @@ body {
     font-weight: 500;
 }
 
-/* My Games List Specific Styles */
+/* My Games List Specific Styles - For my personalized game list, everything white on dark! */
 .games-list {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 15px; /* Space between list items */
 }
 
 .game-list-item {
-    background-color: var(--card-bg);
+    background-color: var(--card-bg); /* List items are dark grey */
     border-radius: 10px;
     padding: 15px;
     display: flex;
@@ -962,19 +522,19 @@ body {
 }
 
 .game-list-info {
-    flex-grow: 1;
+    flex-grow: 1; /* Makes sure it takes up remaining space */
 }
 
 .game-list-title {
     font-size: 1.25rem;
     margin-bottom: 5px;
-    color: var(--text-light);
+    color: var(--text-light) !important; /* List title is white! */
 }
 
 .game-list-meta span {
     display: inline-block;
     font-size: 0.9em;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--faded-text) !important; /* Meta text is faded white for clarity! */
     margin-right: 10px;
 }
 
@@ -986,5 +546,71 @@ body {
 /* Home Page Card Images - My new styles for home page images! */
 .home-card-image {
     height: 200px;
-    object-fit: cover;
+    object-fit: cover; /* Ensuring images look good on the home page */
+}
+
+/* Random Page Styles */
+.random-container {
+    text-align: center;
+    padding: 50px;
+    background-color: var(--card-bg); /* Random page container is dark grey */
+    border-radius: 10px;
+    color: var(--text-light) !important; /* Random page text is white! */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    margin: 50px auto;
+}
+
+.random-container h2 {
+    color: var(--secondary-color) !important; /* Random page heading is blue! */
+    margin-bottom: 20px;
+}
+
+.random-container p {
+    font-size: 1.1rem;
+    color: var(--text-light) !important; /* Random page paragraph is white! */
+}
+
+/* Readability Fixes from Screenshots */
+
+/* For the "Already have an account?" and "Don't have an account?" text */
+.auth-link-text {
+    color: var(--text-light) !important; /* Making sure it's clearly visible and white! */
+    font-size: 1.1em; /* A little bigger too */
+}
+
+/* For the links within those auth texts */
+.auth-link-anchor {
+    color: var(--secondary-color) !important; /* Making these links pop blue! */
+    text-decoration: underline; /* Clearly a link */
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.auth-link-anchor:hover {
+    color: #5dade2 !important; /* Lighter blue on hover, still blue! */
+}
+
+/* For the smaller footer text on login/register pages */
+.footer-small-text {
+    color: var(--faded-text) !important; /* Using my faded white for good contrast on black! */
+}
+
+
+/* For game detail page badges to improve text readability */
+/* Targeting all badges on the game detail page for a subtle text color adjustment */
+.game-detail-badge {
+    color: var(--text-dark) !important; /* Ensuring text is white on all badge colors! */
+    font-weight: 600; /* Making the text a bit bolder */
+}
+
+/* Specific adjustment for warning badge if text-dark isn't enough */
+.game-detail-badge.bg-warning {
+    color: var(--dark-bg) !important; /* Making sure black text is on the yellow warning badge, best contrast! */
+}
+
+/* For the age rating reason text on game detail page */
+/* This is the super specific fix for that one text that was being stubborn! */
+p.card-text.age-rating-reason small.text-muted {
+    color: white !important; /* BOOM! This should force it white now! */
 }
