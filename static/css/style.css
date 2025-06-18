@@ -515,3 +515,476 @@ body {
     transform: scale(1.05);
     box-shadow: 0 8px 25px rgba(0,0,0,0.3);
 }
+/* CSS Variables for consistent theming - These are my custom colors! */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --accent-color: #e74c3c;
+    --success-color: #27ae60;
+    --warning-color: #f39c12;
+    --dark-bg: #1a1a1a;
+    --card-bg: #2d3748;
+    --text-light: #ecf0f1;
+    --text-dark: #2c3e50;
+}
+
+/* Base Styles - My general page styles! */
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Navigation Styles - My cool navigation bar! */
+.navbar {
+    background: rgba(44, 62, 80, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid rgba(52, 152, 219, 0.3);
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--text-light) !important;
+    transition: color 0.3s ease;
+}
+
+.navbar-brand:hover {
+    color: var(--secondary-color) !important;
+}
+
+.navbar-nav .nav-link {
+    color: var(--text-light) !important;
+    font-weight: 500;
+    margin-right: 15px;
+    transition: color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--secondary-color) !important;
+    transform: translateY(-2px);
+}
+
+.navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.5%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+
+.dropdown-menu {
+    background-color: var(--dark-bg);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown-item {
+    color: var(--text-light) !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: var(--secondary-color);
+    color: white !important;
+}
+
+.dropdown-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    padding: 2rem 0;
+}
+
+/* Footer Styles - My website's bottom! */
+.footer {
+    background: var(--dark-bg);
+    color: var(--text-light);
+    padding: 1.5rem 0;
+    border-top: 2px solid rgba(52, 152, 219, 0.3);
+    text-align: center;
+}
+
+.footer p {
+    margin-bottom: 0;
+}
+
+/* Card Styles - For my content boxes! */
+.card {
+    background-color: var(--card-bg);
+    color: var(--text-light);
+    border-radius: 10px;
+    border: none;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+}
+
+.card-body p {
+    color: var(--text-light);
+}
+
+/* Form Styles - For all my input forms! */
+.form-label {
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.form-control, .form-select {
+    background-color: #3d495a;
+    color: var(--text-light);
+    border: 1px solid #5a6b83;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #3d495a;
+    color: var(--text-light);
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.form-text {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Button Styles - My custom buttons! */
+.btn {
+    font-weight: bold;
+    border-radius: 5px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.btn-success:hover {
+    background-color: #229954;
+    border-color: #229954;
+}
+
+.btn-danger {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+}
+
+.btn-warning {
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+    color: var(--dark-bg); /* Ensure dark text on warning */
+}
+
+.btn-warning:hover {
+    background-color: #e67e22;
+    border-color: #e67e22;
+}
+
+.btn-info {
+    background-color: #34ace0; /* A slightly different info color */
+    border-color: #34ace0;
+}
+
+.btn-info:hover {
+    background-color: #2a8abd;
+    border-color: #2a8abd;
+}
+
+.btn-secondary {
+    background-color: #7f8c8d;
+    border-color: #7f8c8d;
+}
+
+.btn-secondary:hover {
+    background-color: #6c7a7b;
+    border-color: #6c7a7b;
+}
+
+.btn-dark {
+    background-color: var(--dark-bg);
+    border-color: var(--dark-bg);
+}
+
+.btn-dark:hover {
+    background-color: #0d0d0d;
+    border-color: #0d0d0d;
+}
+
+/* Alert Styles - My alert messages! */
+.alert {
+    border: none;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+}
+
+.alert-success {
+    background: linear-gradient(45deg, rgba(39, 174, 96, 0.1), rgba(46, 204, 113, 0.1));
+    border-left: 4px solid var(--success-color);
+    color: #155724;
+}
+
+.alert-danger {
+    background: linear-gradient(45deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
+    border-left: 4px solid var(--accent-color);
+    color: #721c24;
+}
+
+.alert-warning {
+    background: linear-gradient(45deg, rgba(243, 156, 18, 0.1), rgba(230, 126, 34, 0.1));
+    border-left: 4px solid var(--warning-color);
+    color: #856404;
+}
+
+.alert-info {
+    background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(41, 128, 185, 0.1));
+    border-left: 4px solid var(--secondary-color);
+    color: #0c5460;
+}
+
+/* Specific styles for search filters */
+.search-filter-card .card-body {
+    padding: 20px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.slide-up {
+    animation: slideUp 0.5s ease-out;
+}
+
+/* Loading spinner for buttons */
+.loading {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: loading-spin 0.75s linear infinite;
+}
+
+@keyframes loading-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Custom shadow for cards */
+.shadow-soft {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Profile specific styles */
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, var(--secondary-color), #5dade2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
+    color: white;
+    font-weight: bold;
+}
+
+/* Game Detail Page - My new styles for game images! */
+.game-detail-hero {
+    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6));
+    border-radius: 15px;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.game-detail-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"25\" cy=\"25\" r=\"1\" fill=\"rgba(255,255,255,0.1)\"/><circle cx=\"75\" cy=\"75\" r=\"1\" fill=\"rgba(255,255,255,0.1)\"/></pattern></defs><rect width=\"100%\" height=\"100%\" fill=\"url(%23grain)\"/></svg>');
+    opacity: 0.1;
+    z-index: -1;
+}
+
+.game-detail-hero h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.game-detail-hero p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.game-detail-hero .badge {
+    font-size: 1rem;
+    padding: 0.5em 0.8em;
+    margin-right: 0.5em;
+}
+
+.game-detail-hero .btn {
+    font-size: 1.1rem;
+    padding: 0.7em 1.5em;
+}
+
+.game-cover-image {
+    max-height: 400px;
+    object-fit: contain;
+}
+
+.game-thumbnail-image {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+}
+
+.platforms .platform-badge {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    padding: 0.3em 0.7em;
+    border-radius: 5px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+/* My Games List Specific Styles */
+.games-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.game-list-item {
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.game-list-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.game-list-info {
+    flex-grow: 1;
+}
+
+.game-list-title {
+    font-size: 1.25rem;
+    margin-bottom: 5px;
+    color: var(--text-light);
+}
+
+.game-list-meta span {
+    display: inline-block;
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.7);
+    margin-right: 10px;
+}
+
+/* For forms that are meant to display inline with other elements */
+.inline-form-button {
+    display: inline;
+}
+
+/* Home Page Card Images - My new styles for home page images! */
+.home-card-image {
+    height: 200px;
+    object-fit: cover;
+}

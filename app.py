@@ -97,11 +97,7 @@ def calculate_age(dob_str):
     except ValueError:
         return None # Invalid date format
 
-<<<<<<< HEAD
 # Function to check password strength
-=======
-# Function to check password strength (new)
->>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
 def is_strong_password(password):
     """
     Checks if a password meets complexity requirements:
@@ -123,11 +119,7 @@ def is_strong_password(password):
         return False
     return True
 
-<<<<<<< HEAD
 # Function to validate username
-=======
-# Function to validate username (new)
->>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
 def is_valid_username(username):
     """
     Checks if a username contains only alphanumeric characters and underscores.
@@ -140,14 +132,6 @@ def is_valid_username(username):
         return False
     return True
 
-<<<<<<< HEAD
-=======
-# --- SQL Query Definitions for Popular_Games.db ---
-# Note: The original query assumes `game_platforms` links to 8 platform_id columns.
-# This is an unusual schema. If `game_platforms` has a game_id and a single platform_id
-# column for a many-to-many relationship, this query needs adjustment.
-# I'm keeping it as is based on your provided original.
->>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
 GAME_SELECT = """
 SELECT
     g.game_id,
@@ -235,11 +219,7 @@ def register():
             flash('All fields are required!', 'danger')
             return redirect(url_for('register'))
 
-<<<<<<< HEAD
         #Username validation
-=======
-        # Refinement: Username validation
->>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
         if not is_valid_username(username):
             flash('Username must be 3-20 characters long and contain only letters, numbers, and underscores.', 'danger')
             return redirect(url_for('register'))
@@ -248,11 +228,7 @@ def register():
             flash('Please enter a valid email address.', 'danger')
             return redirect(url_for('register'))
 
-<<<<<<< HEAD
         #Password complexity validation
-=======
-        # Refinement: Password complexity validation
->>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
         if not is_strong_password(password):
             flash('Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.', 'danger')
             return redirect(url_for('register'))
@@ -381,7 +357,6 @@ def profile():
     today_date_str = date.today().strftime('%Y-%m-%d')
 
     return render_template('profile.html', user=user, today_date_str=today_date_str)
-<<<<<<< HEAD
 
 @app.route('/update_username', methods=['POST'])
 def update_username():
@@ -429,8 +404,6 @@ def update_username():
         flash(f'An unexpected error occurred while updating username: {e}', 'danger')
     
     return redirect(url_for('profile'))
-=======
->>>>>>> 148117249ae8fc48af2540cf1d5e3c84a3b24bd9
 
 @app.route('/change_password', methods=['POST'])
 def change_password():
@@ -485,234 +458,6 @@ def change_password():
         flash('An unexpected error occurred while updating password.', 'error')
     
     return redirect(url_for('profile'))
-
-@app.route('/update_dob', methods=['POST'])
-def update_dob():
-    if 'user_id' not in session:
-        flash('Please log in to update your profile.', 'warning')
-        return redirect(url_for('login'))
-
-    user = User.query.get(session['user_id'])
-    if not user:
-        flash('User not found.', 'danger')
-        return redirect(url_for('login'))
-
-    new_dob = request.form.get('dob')
-    if new_dob:
-        if not re.match(r"^\d{4}-\d{2}-\d{2}$", new_dob):
-            flash('Invalid date format. Please use YYYY-MM-DD.', 'danger')
-            return redirect(url_for('profile'))
-        
-        try:
-            birth_date_obj = datetime.strptime(new_dob, "%Y-%m-%d").date()
-            current_date = date.today()
-            min_dob_allowed = date(1925, 1, 1) # Nothing before 1925
-        except ValueError:
-            flash('Invalid date of birth provided. Please use a valid date.', 'danger')
-            return redirect(url_for('profile'))
-
-        if birth_date_obj > current_date:
-            flash('Date of birth cannot be in the future. DOB not updated.', 'danger')
-            return redirect(url_for('profile'))
-
-        if birth_date_obj < min_dob_allowed:
-            flash(f'Date of birth cannot be before {min_dob_allowed.year}. DOB not updated.', 'danger')
-            return redirect(url_for('profile'))
-
-        user_age = calculate_age(new_dob)
-        if user_age is None:
-            flash('Invalid date of birth provided.', 'danger')
-            return redirect(url_for('profile'))
-        elif user_age < 13: # Example: Minimum age requirement
-            flash('You must be at least 13 years old. DOB not updated.', 'danger')
-            return redirect(url_for('profile'))
-
-        try:
-            user.dob = new_dob
-            db.session.commit()
-            flash('Date of birth updated successfully!', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash(f'An unexpected error occurred: {e}', 'danger')
-    else:
-        flash('Date of birth cannot be empty.', 'danger')
-
-    return redirect(url_for('profile'))
-
-@app.route('/search', methods=["GET", "POST"])
-def search():
-    """
-    Multiple filter search route.
-    """
-    conn = get_popular_games_db()
-    publishers = conn.execute("SELECT name FROM publishers").fetchall()
-    developers = conn.execute("SELECT name FROM developers").fetchall()
-    
-    game_titles = [row["title"] for row in conn.execute("SELECT title FROM games").fetchall()]
-    dev_names = [row["name"] for row in developers]
-    pub_names = [row["name"] for row in publishers]
-
-    row = conn.execute("SELECT MIN(metacritic_score) AS min_score, MAX(metacritic_score) AS max_score FROM games").fetchone()
-    min_score = row["min_score"] if row and row["min_score"] is not None else 0
-    max_score = row["max_score"] if row and row["max_score"] is not None else 100
-    
-    all_platforms = conn.execute("SELECT platform_id, platform_name FROM platforms ORDER BY platform_name").fetchall()
-
-    results = []
-    search_type = None
-    
-    # Store form values to pre-fill the search form on re-render
-    search_term_val = ""
-    score_min_val = ""
-    score_max_val = ""
-    date_min_val = ""
-    date_max_val = ""
-    selected_age_rating = ""
-    selected_platforms_ids = [] # Use platform IDs for comparison
-
-    if request.method == "POST":
-        filter_type = request.form.get("filter")
-        query_parts = [GAME_SELECT, "WHERE 1=1"] # Start with a true condition for easy AND additions
-        params = []
-        error = None
-
-        if filter_type == "text":
-            search_term_val = request.form.get("search_term", "").strip()
-            if search_term_val:
-                candidates = game_titles + dev_names + pub_names
-                # Use difflib.get_close_matches for a slightly fuzzy search on input, then use that for LIKE
-                # Note: This is an expensive operation for large datasets.
-                close_matches = difflib.get_close_matches(search_term_val, candidates, n=1, cutoff=0.6)
-                best_match = close_matches[0] if close_matches else search_term_val
-                wildcard = f"%{best_match}%"
-                
-                query_parts.append("""
-                    AND (g.title LIKE ? COLLATE NOCASE
-                        OR d.name LIKE ? COLLATE NOCASE
-                        OR pub.name LIKE ? COLLATE NOCASE
-                        OR g.genre LIKE ? COLLATE NOCASE
-                        OR g.description LIKE ? COLLATE NOCASE)
-                    """)
-                params.extend([wildcard, wildcard, wildcard, wildcard, wildcard])
-                search_type = "Text Search"
-            else:
-                error = "Please enter a search term."
-
-        elif filter_type == "score":
-            score_min_val = request.form.get("score_min", "").strip()
-            score_max_val = request.form.get("score_max", "").strip()
-            try:
-                min_val = int(score_min_val) if score_min_val else min_score
-                max_val = int(score_max_val) if score_max_val else max_score
-
-                if not (0 <= min_val <= 100 and 0 <= max_val <= 100 and min_val <= max_val):
-                    error = "Score values must be between 0 and 100, and min score cannot exceed max score."
-                else:
-                    query_parts.append(" AND g.metacritic_score >= ? AND g.metacritic_score <= ? ")
-                    params.extend([min_val, max_val])
-                    search_type = f"Metacritic Score: {min_val}-{max_val}"
-            except ValueError:
-                error = "Invalid score values. Please enter numbers only."
-
-        elif filter_type == "date":
-            date_min_val = request.form.get("date_min", "").strip()
-            date_max_val = request.form.get("date_max", "").strip()
-            try:
-                if date_min_val and date_max_val:
-                    date_min_obj = datetime.strptime(date_min_val, "%Y-%m-%d")
-                    date_max_obj = datetime.strptime(date_max_val, "%Y-%m-%d")
-                    
-                    # Ensure valid date range (e.g., after 1980, before today)
-                    allowed_min_date = datetime(1980, 1, 1).date()
-                    allowed_max_date = date.today()
-
-                    if not (allowed_min_date <= date_min_obj.date() <= date_max_obj.date() <= allowed_max_date):
-                        error = f"Dates must be between {allowed_min_date.strftime('%Y-%m-%d')} and {allowed_max_date.strftime('%Y-%m-%d')}, and start date cannot be after end date."
-                    else:
-                        query_parts.append(" AND g.release_date BETWEEN ? AND ? ")
-                        params.extend([date_min_val, date_max_val])
-                        search_type = f"Release Date: {date_min_val} to {date_max_val}"
-                else:
-                    error = "Please provide both start and end dates."
-            except ValueError:
-                error = "Invalid date format. Use YYYY-MM-DD."
-
-        elif filter_type == "age_rating":
-            selected_age_rating = request.form.get("age_rating", "").strip().upper()
-            allowed_age_ratings = ["G", "PG", "M", "R13", "R16", "R18"]
-            if selected_age_rating and selected_age_rating in allowed_age_ratings:
-                query_parts.append(" AND ar.rating = ? ")
-                params.append(selected_age_rating)
-                search_type = f"Age Rating: {selected_age_rating}"
-            else:
-                error = f"Invalid age rating. Allowed ratings: {', '.join(allowed_age_ratings)}."
-
-        elif filter_type == "platform":
-            selected_platforms_ids = request.form.getlist("platforms") # Get list of selected platform IDs
-            if selected_platforms_ids:
-                # Build a dynamic OR condition for each platform_id column
-                # This is still a bit clunky due to your database schema (multiple platform_id columns)
-                platform_conditions = []
-                for i in range(1, 9): # Iterate through platform_id, platform_id2, ..., platform_id8
-                    platform_conditions.append(f"gp.platform_id{'' if i == 1 else i} IN ({','.join('?' * len(selected_platforms_ids))})")
-                
-                query_parts.append(" AND (" + " OR ".join(platform_conditions) + ")")
-                
-                # Extend params for each platform_id column condition
-                for _ in range(8): # Each platform_idX column needs its own set of parameters
-                    params.extend(selected_platforms_ids)
-                
-                search_type = "Platform"
-            else:
-                error = "Please select at least one platform."
-        
-        # If no filter type was selected or something went wrong
-        if not filter_type and not error:
-            error = "Please select a search filter."
-
-        if error:
-            flash(error, 'danger')
-        else:
-            try:
-                full_query = " ".join(query_parts)
-                results_raw = conn.execute(full_query, tuple(params)).fetchall()
-                
-                processed_results = []
-                for game_row in results_raw:
-                    game_dict = dict(game_row)
-                    platforms_list = []
-                    # Collect platforms from potentially multiple platform_nameX columns
-                    for i in range(1, 9):
-                        platform_key = f'platform_name{"" if i == 1 else i}'
-                        if game_dict.get(platform_key):
-                            platforms_list.append(game_dict[platform_key])
-                            # Optional: remove the individual platform_nameX keys if not needed for display
-                            # del game_dict[platform_key]
-                    game_dict['platforms_display'] = list(set(platforms_list)) # Remove duplicates
-                    processed_results.append(game_dict)
-                results = processed_results
-                
-            except sqlite3.Error as e:
-                flash(f"Database error during search: {e}", 'danger')
-                results = [] # Clear results on error
-    
-    return render_template("search.html",
-                           publishers=publishers,
-                           developers=developers,
-                           min_score=min_score,
-                           max_score=max_score,
-                           platforms=all_platforms,
-                           results=results,
-                           search_type=search_type,
-                           # Pass back current form values for persistence
-                           search_term=search_term_val,
-                           score_min=score_min_val,
-                           score_max=score_max_val,
-                           date_min=date_min_val,
-                           date_max=date_max_val,
-                           selected_age_rating=selected_age_rating,
-                           selected_platforms=selected_platforms_ids # Pass IDs to re-check checkboxes
-                           )
 
 @app.route('/game/<int:game_id>')
 def game_detail(game_id):
@@ -877,6 +622,52 @@ def remove_from_list(game_id):
     if request.referrer and 'my_games' in request.referrer:
         return redirect(url_for('my_games'))
     return redirect(url_for('game_detail', game_id=game_id))
+@app.route('/update_email', methods=['POST'])
+def update_email():
+    """
+    Handles updating the user's email address.
+    """
+    if 'user_id' not in session:
+        flash('Please log in to update your email.', 'info')
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+    if not user:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
+
+    new_email = request.form.get('new_email', '').strip()
+
+    if not new_email:
+        flash('New email cannot be empty.', 'danger')
+        return redirect(url_for('profile'))
+
+    if new_email == user.email:
+        flash('New email is the same as your current email.', 'info')
+        return redirect(url_for('profile'))
+
+    # Validate new email format
+    if not is_valid_email(new_email):
+        flash('Please enter a valid email address.', 'danger')
+        return redirect(url_for('profile'))
+
+    # Check if new email is already taken by another user
+    existing_user_with_new_email = User.query.filter(User.email == new_email).first()
+    if existing_user_with_new_email and existing_user_with_new_email.id != user.id:
+        flash('This email address is already taken by another account. Please choose a different one or log in with that account.', 'danger')
+        return redirect(url_for('profile'))
+
+    try:
+        user.email = new_email
+        db.session.commit()
+        session['email'] = new_email # Update session email immediately
+        flash('Email address updated successfully! You can now use this email to log in.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        print(f"Database error updating email: {e}")
+        flash('An unexpected error occurred while updating your email address.', 'error')
+
+    return redirect(url_for('profile'))
 
 # --- Application Entry Point ---
 if __name__ == '__main__':
