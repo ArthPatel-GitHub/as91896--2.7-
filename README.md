@@ -30,6 +30,8 @@ NB:  You need the virtual env activate to ensure the libraries are installed her
 To install Flask, if not already installed
 ```
 pip install flask
+
+pip install gunicorn
 ```
 ### OPTION B: all-in-one
 
