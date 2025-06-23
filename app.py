@@ -724,4 +724,4 @@ def update_email():
 
 # --- Application Entry Point ---
 if __name__ == '__main__':
-    app.run(debug=True)  # Turn off debug = True in production
+    app.run()  # Turn off debug = True in production
